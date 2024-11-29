@@ -170,21 +170,23 @@ function Blog({ params }) {
                     </ul>
                   )}
 
-                  <Button
-                    variant="primary"
-                    onClick={() => handleShow(item)}
-                    className="me-2 py-2"
-                  >
-                    Add to cart
-                  </Button>
+                  <div className="d-flex justify-content-between justify-content-md-start ">
+                    <Button
+                      variant="primary"
+                      onClick={() => handleShow(item)}
+                      className="me-2 py-2"
+                    >
+                      Add to cart
+                    </Button>
 
-                  <Button
-                    variant="warning"
-                    className="py-2 px-3 text-white"
-                    onClick={() => handleBuyNow(item)}
-                  >
-                    Buy Now
-                  </Button>
+                    <Button
+                      variant="warning"
+                      className="py-2 px-3 text-white"
+                      onClick={() => handleBuyNow(item)}
+                    >
+                      Buy Now
+                    </Button>
+                  </div>
 
                   <Offcanvas show={cart} onHide={() => setCart(false)}>
                     <Offcanvas.Header closeButton>
