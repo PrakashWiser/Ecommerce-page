@@ -91,7 +91,7 @@ function Blog({ params }) {
 
   return (
     <MainLayout>
-      {/* <Navbars /> */}
+      <Navbars />
       {data && (
         <Container>
           <Row className="vh-100 align-items-center justify-content-center prodcts_details">

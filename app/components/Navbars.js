@@ -37,6 +37,8 @@ const DropdownContent = memo(({ items }) => {
   );
 });
 
+DropdownContent.displayName = "DropdownContent";
+
 function Navbars() {
   const [theme, setTheme] = useState("light");
   const [sessionData, setSessionData] = useState(null);
@@ -56,14 +58,12 @@ function Navbars() {
     setSessionData(session);
   }, [theme]);
 
-  useEffect(() => {
-    
-  }, []);
+  useEffect(() => {}, []);
 
   const handleLogout = () => {
     localStorage.clear();
     setSessionData(null);
-    window.location.href = "/"; 
+    window.location.href = "/";
   };
 
   const dropdownItems = [
@@ -89,46 +89,47 @@ function Navbars() {
   ];
 
   return (
-    // <Navbar
-    //   expand="lg"
-    //   className="bg-body-tertiary navbar sticky-top text_black"
-    // >
-    //   <Container>
-    //     <Navbar.Brand className="fw600 d-flex gap-2" href="/">
-    //       <TbSkateboard aria-label="Logo" />
-    //       Skaters
-    //     </Navbar.Brand>
-    //     <Navbar.Toggle aria-controls="navbarScroll" />
-    //     <Navbar.Collapse id="navbarScroll">
-    //       <Nav className="me-auto my-2 my-lg-0" navbarScroll>
-    //         <Nav.Link href="/">Home</Nav.Link>
-    //         <NavDropdown title="Categories" id="navbarScrollingDropdown">
-    //           <DropdownContent items={dropdownItems} />
-    //         </NavDropdown>
-    //       </Nav>
-    //       <Form className="d-flex align-items-center gap-3">
-    //         <Searchbar />
-    //         <FiShoppingCart aria-label="Shopping Cart" />
-    //         <Nav.Link
-    //           onClick={() => setTheme((prev) => (prev === "light" ? "dark" : "light"))}
-    //         >
-    //           {theme === "light" ? <MdLightMode /> : <FiMoon />}
-    //         </Nav.Link>
-    //         {!sessionData ? (
-    //           <Link
-    //             href="./signin"
-    //             className="btn rounded-pill bg_green text-white"
-    //           >
-    //             Sign in
-    //           </Link>
-    //         ) : (
-    //           <Button onClick={handleLogout}>Sign out</Button>
-    //         )}
-    //       </Form>
-    //     </Navbar.Collapse>
-    //   </Container>
-    // </Navbar>
-    <div>navbar</div>
+    <Navbar
+      expand="lg"
+      className="bg-body-tertiary navbar sticky-top text_black"
+    >
+      <Container>
+        <Navbar.Brand className="fw600 d-flex gap-2" href="/">
+          <TbSkateboard aria-label="Logo" />
+          Skaters
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="navbarScroll" />
+        <Navbar.Collapse id="navbarScroll">
+          <Nav className="me-auto my-2 my-lg-0" navbarScroll>
+            <Nav.Link href="/">Home</Nav.Link>
+            <NavDropdown title="Categories" id="navbarScrollingDropdown">
+              <DropdownContent items={dropdownItems} />
+            </NavDropdown>
+          </Nav>
+          <Form className="d-flex align-items-center gap-3">
+            <Searchbar />
+            <FiShoppingCart aria-label="Shopping Cart" />
+            <Nav.Link
+              onClick={() =>
+                setTheme((prev) => (prev === "light" ? "dark" : "light"))
+              }
+            >
+              {theme === "light" ? <MdLightMode /> : <FiMoon />}
+            </Nav.Link>
+            {!sessionData ? (
+              <Link
+                href="./signin"
+                className="btn rounded-pill bg_green text-white"
+              >
+                Sign in
+              </Link>
+            ) : (
+              <Button onClick={handleLogout}>Sign out</Button>
+            )}
+          </Form>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 }
 
