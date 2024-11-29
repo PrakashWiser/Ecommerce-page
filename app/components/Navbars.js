@@ -15,7 +15,7 @@ import Link from "next/link";
 
 const DropdownContent = memo(({ items }) => {
   return (
-    <div className="d-flex">
+    <div className="d-md-flex">
       {items.map((section, index) => (
         <div key={index} className="me-3">
           {section.map((item, idx) => (
@@ -69,7 +69,7 @@ function Navbars() {
   const dropdownItems = [
     [
       {
-        href: "#action3",
+        href: "/",
         title: "Products",
         description: "All the products we have to offer",
       },

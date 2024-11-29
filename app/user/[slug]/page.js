@@ -90,7 +90,7 @@ function Blog({ params }) {
   };
 
   return (
-    <MainLayout>
+    <MainLayout >
       <Navbars />
       {data && (
         <Container>
@@ -170,7 +170,7 @@ function Blog({ params }) {
                     </ul>
                   )}
 
-                  <div className="d-flex justify-content-between justify-content-md-start ">
+                  <div className="d-flex justify-content-between justify-content-md-start my-3">
                     <Button
                       variant="primary"
                       onClick={() => handleShow(item)}
