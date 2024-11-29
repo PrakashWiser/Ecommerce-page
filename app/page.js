@@ -227,7 +227,7 @@ export default function Home() {
                           {items.discription ? items.discription : ""}
                         </Card.Text>
                       </Card.Body>
-                      <Card.Footer
+                      {/* <Card.Footer
                         className="border-0 d-flex justify-content-between align-items-center"
                         style={{ backgroundColor: "#fff" }}
                       >
@@ -235,7 +235,7 @@ export default function Home() {
                         <small>
                           <PiShoppingCart />
                         </small>
-                      </Card.Footer>
+                      </Card.Footer> */}
                     </Card>
                   </Col>
                 ))}
