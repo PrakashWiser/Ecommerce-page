@@ -79,110 +79,106 @@ const UpdatePro = ({ params }) => {
 
   return (
     <Container>
-      {admin ? (
-        <div className=" form_width_tybe vh-100 d-flex flex-column justify-content-center">
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <h2 className="mt-3 mb-4">Update Product</h2>
-          </div>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label htmlFor="image" className="form-label">
-                Image
-              </label>
-              <input
-                type="file"
-                className="form-control"
-                id="image"
-                accept="image/*"
-                onChange={handleImageChange}
-              />
-            </div>
-            {imageData ? (
-              <img
-                src={imageData}
-                alt="Selected"
-                className="img-fluid mb-3"
-                style={{ maxWidth: "200px" }}
-              />
-            ) : image ? (
-              <img
-                src={Giturl + image}
-                alt="Current"
-                className="img-fluid mb-3"
-                style={{ maxWidth: "200px" }}
-              />
-            ) : null}
-
-            <div className="mb-3">
-              <label htmlFor="name" className="form-label">
-                Name
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="price" className="form-label">
-                Price
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="price"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="discription" className="form-label">
-                Description
-              </label>
-              <textarea
-                className="form-control"
-                id="discription"
-                rows={5}
-                value={discription}
-                onChange={(e) => setDiscription(e.target.value)}
-                required
-              ></textarea>
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="category" className="form-label">
-                Category
-              </label>
-              <select
-                className="form-control"
-                id="category"
-                value={listingType}
-                onChange={(e) => setListingType(e.target.value)}
-                required
-              >
-                <option value="sketeboard">Skateboard</option>
-                <option value="clothing">Clothing</option>
-                <option value="shoe">Shoe</option>
-                <option value="headphone">Headphone</option>
-                <option value="mobile">Mobile</option>
-                <option value="others">Others</option>
-              </select>
-            </div>
-
-            <button type="submit" className="btn btn-success">
-              Update Product
-            </button>
-          </form>
+      <div className=" form_width_tybe vh-100 d-flex flex-column justify-content-center">
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <h2 className="mt-3 mb-4">Update Product</h2>
         </div>
-      ) : (
-        router.push("/signin")
-      )}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label htmlFor="image" className="form-label">
+              Image
+            </label>
+            <input
+              type="file"
+              className="form-control"
+              id="image"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+          </div>
+          {imageData ? (
+            <img
+              src={imageData}
+              alt="Selected"
+              className="img-fluid mb-3"
+              style={{ maxWidth: "200px" }}
+            />
+          ) : image ? (
+            <img
+              src={Giturl + image}
+              alt="Current"
+              className="img-fluid mb-3"
+              style={{ maxWidth: "200px" }}
+            />
+          ) : null}
+
+          <div className="mb-3">
+            <label htmlFor="name" className="form-label">
+              Name
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="price" className="form-label">
+              Price
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="price"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="discription" className="form-label">
+              Description
+            </label>
+            <textarea
+              className="form-control"
+              id="discription"
+              rows={5}
+              value={discription}
+              onChange={(e) => setDiscription(e.target.value)}
+              required
+            ></textarea>
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="category" className="form-label">
+              Category
+            </label>
+            <select
+              className="form-control"
+              id="category"
+              value={listingType}
+              onChange={(e) => setListingType(e.target.value)}
+              required
+            >
+              <option value="sketeboard">Skateboard</option>
+              <option value="clothing">Clothing</option>
+              <option value="shoe">Shoe</option>
+              <option value="headphone">Headphone</option>
+              <option value="mobile">Mobile</option>
+              <option value="others">Others</option>
+            </select>
+          </div>
+
+          <button type="submit" className="btn btn-success">
+            Update Product
+          </button>
+        </form>
+      </div>
     </Container>
   );
 };

@@ -24,7 +24,7 @@ const Login = () => {
         let EmailData = apiData.filter((items) => items.email == email);
         if (EmailData.length == 0) {
           alert("can't see your email, pls register first");
-          router.push("/Signup");
+          router.push("/signupp");
         } else {
           if (password == EmailData[0]?.password) {
             let Admin = EmailData[0].email;

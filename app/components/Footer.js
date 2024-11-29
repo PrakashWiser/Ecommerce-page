@@ -4,7 +4,7 @@ import { Container } from "react-bootstrap";
 function Footer() {
   return (
     <footer>
-      <div className="border-top">
+      <div className="border-top d-none d-md-block">
         <Container className="d-flex justify-content-center py-4">
           <span>© 2023 Farhan Gunawan, Inc. All rights reserved</span>
         </Container>
