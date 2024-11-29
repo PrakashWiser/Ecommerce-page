@@ -241,7 +241,7 @@ export default function Home() {
                 ))}
               </Row>
             </div>
-            {/* {!showAllProducts && (
+            {!showAllProducts && (
               <div className="d-flex justify-content-center mt-4">
                 <button
                   className="rounded-pill bg_green py-2 px-3 text-white border-0"
@@ -251,7 +251,7 @@ export default function Home() {
                   <FaArrowRight className="ms-2" />
                 </button>
               </div>
-            )} */}
+            )}
           </div>
         </Container>
       </section>
