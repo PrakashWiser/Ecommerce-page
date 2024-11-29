@@ -61,7 +61,7 @@ export default function Home() {
   return (
     <>
       <section>
-        <Navbars />
+        {/* <Navbars /> */}
         <div className="home_sec_one mb-5 postion-relative">
           <svg
             xmlns="http://www.w3.org/2000/svg"
