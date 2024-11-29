@@ -106,7 +106,7 @@ function Navbars() {
               <DropdownContent items={dropdownItems} />
             </NavDropdown>
           </Nav>
-          <Form className="d-flex align-items-center gap-3">
+          <Form className="d-md-flex align-items-center gap-3">
             <Searchbar />
             <FiShoppingCart aria-label="Shopping Cart" />
             <Nav.Link
