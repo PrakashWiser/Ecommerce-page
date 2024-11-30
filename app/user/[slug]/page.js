@@ -15,7 +15,6 @@ function Blog({ params }) {
   const [cart, setCart] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [data, setData] = useState([]);
-
   const router = useRouter();
   const Giturl =
     "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
@@ -53,11 +52,17 @@ function Blog({ params }) {
   }, [APIData, value]);
 
   const handleShow = (selectedItem) => {
+    console.log(selectedItem);
+
     setCart(true);
     const existingItem = cartItems.find(
       (cartItem) => cartItem.id === selectedItem.id
     );
-    if (!existingItem) {
+    console.log(existingItem);
+
+    if (existingItem) {
+      alert("product already added");
+    } else {
       const updatedCart = [...cartItems, selectedItem];
       setCartItems(updatedCart);
       localStorage.setItem("cartItems", JSON.stringify(updatedCart));
@@ -68,7 +73,6 @@ function Blog({ params }) {
     const amount = item.price;
 
     console.log(`Redirecting to payment gateway with amount: $${amount}`);
-    // window.location.href = `https://pay.google.com/gp/p/ui/pay?amount=${amount}`;
   };
 
   const handleRemoveFromCart = (itemId) => {
@@ -90,7 +94,7 @@ function Blog({ params }) {
   };
 
   return (
-    <MainLayout >
+    <MainLayout>
       <Navbars />
       {data && (
         <Container>

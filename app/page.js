@@ -95,7 +95,7 @@ export default function Home() {
                   <div className="d-flex gap-3">
                     <Link
                       className="rounded-pill fw600 bg_green py-2 px-3 text-white"
-                      href="#"
+                      href="/shopcollection"
                     >
                       Buy Now
                     </Link>
@@ -110,7 +110,7 @@ export default function Home() {
                 <Col md={5}>
                   <Image
                     link={homebBanner}
-                    styles="img-fluid rounded-pill"
+                    styles="img-fluid rounded-pill my-4 my-md-0"
                     alt="home-banner-img"
                   />
                 </Col>
@@ -130,7 +130,9 @@ export default function Home() {
                 </p>
               </li>
               <li>
-                Shop the Collection <FaArrowRight className="svg_frist" />
+                <Link href="/shopcollection" className="primary_color">
+                  Shop the Collection <FaArrowRight className="svg_frist" />
+                </Link>
               </li>
             </ul>
             <Row>
@@ -189,7 +191,9 @@ export default function Home() {
                 <p>Explore all products we offer from around the world</p>
               </li>
               <li>
-                Shop the Collection <FaArrowRight />
+                <Link href="/shopcollection" className="primary_color">
+                  Shop the Collection <FaArrowRight className="svg_frist" />
+                </Link>
               </li>
             </ul>
             <div>

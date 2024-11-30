@@ -79,7 +79,7 @@ a {
   color: var(--text-color);
 }
 .primary_color {
-  color: var(--primary-color);
+  color: var(--primary-color) !important;
 }
 .text_white {
   color: var(--text-color) !important;
@@ -193,6 +193,10 @@ hr,
 .home_sec_three .img_details {
   object-fit: cover;
   height: 245px;
+}
+.shop_collection{
+  width: 300px;
+  height: 200px;
 }
 @media (min-width: 1200px) {
   .home_sec_one h1 {
