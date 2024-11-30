@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import MainLayout from "../Layout/MainLayout";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Button } from "react-bootstrap";
 import Navbars from "../components/Navbars";
 import { MdDelete } from "react-icons/md";
 
@@ -29,7 +29,9 @@ function Shopcollection() {
     <MainLayout styles="py-5">
       <Container>
         <Navbars />
-        <h3 className="text-center my-5 text-decoration-underline">Your Buy Now Products</h3>
+        <h3 className="text-center my-5 text-decoration-underline">
+          Your Buy Now Products
+        </h3>
         <Row className="align-items-center justify-content-center">
           {collection.length > 0 ? (
             collection.map((item, index) => (
@@ -49,8 +51,9 @@ function Shopcollection() {
                     <li>Price: {item.price}</li>
                     <li>Type: {item.listingType}</li>
                   </ul>
+                  <Button variant="info">Buy Now</Button>
                 </Col>
-                <Col md={1} className="d-flex align-items-center">
+                <Col md={1} className="d-flex align-items-center py-3 py-md-0">
                   <MdDelete
                     className="text-danger fs-1 cursor-pointer"
                     onClick={() => handleClick(item.id)}
