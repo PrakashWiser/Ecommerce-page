@@ -38,7 +38,7 @@ function Blog({ params }) {
     if (Datas) {
       setData(Datas);
     } else {
-      router.push("/signupp");
+      router.push("/signu");
     }
 
     const savedCart = localStorage.getItem("cartItems");

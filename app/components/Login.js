@@ -4,6 +4,7 @@ import { ImGithub } from "react-icons/im";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Link from "next/link";
 const Login = () => {
   const [apiData, setApiData] = useState([]);
   const [email, setEmail] = useState("");
@@ -76,6 +77,7 @@ const Login = () => {
           <button type="submit" className="btn btn-primary fw-bold">
             Sign in
           </button>
+          <Link href="/signupp">Create New Account</Link>
         </div>
       </form>
     </div>
