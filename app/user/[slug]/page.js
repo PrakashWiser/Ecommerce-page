@@ -37,7 +37,7 @@ function Blog({ params }) {
     if (Datas) {
       setData(Datas);
     } else {
-      router.push("/signu");
+      router.push("/signin");
     }
 
     const savedCart = localStorage.getItem("cartItems");
@@ -52,14 +52,10 @@ function Blog({ params }) {
   }, [APIData, value]);
 
   const handleShow = (selectedItem) => {
-    console.log(selectedItem);
-
     setCart(true);
     const existingItem = cartItems.find(
       (cartItem) => cartItem.id === selectedItem.id
     );
-    console.log(existingItem);
-
     if (existingItem) {
       alert("product already added");
     } else {
@@ -87,7 +83,7 @@ function Blog({ params }) {
     }
 
     const total = cartItems.reduce((total, item) => {
-      return total + (Number(item.price) || 0);
+      return total + (parseFloat(item.price) || 0);
     }, 0);
 
     return total.toFixed(2);

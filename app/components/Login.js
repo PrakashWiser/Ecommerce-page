@@ -3,6 +3,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { ImGithub } from "react-icons/im";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import Link from "next/link";
 const Login = () => {
@@ -24,7 +26,7 @@ const Login = () => {
       if (password) {
         let EmailData = apiData.filter((items) => items.email == email);
         if (EmailData.length == 0) {
-          alert("can't see your email, pls register first");
+          toast.error("can't see your email, pls register first");
           router.push("/signupp");
         } else {
           if (password == EmailData[0]?.password) {
@@ -37,14 +39,14 @@ const Login = () => {
               localStorage.setItem("Data", EmailData[0].email);
             }
           } else {
-            alert("please enter correct password");
+            toast.warning("please enter correct password");
           }
         }
       } else {
-        alert("please fill the password");
+        toast.warning("please fill the password");
       }
     } else {
-      alert("please fill the email");
+      toast.warning("please fill the email");
     }
   };
 
@@ -77,7 +79,20 @@ const Login = () => {
           <button type="submit" className="btn btn-primary fw-bold">
             Sign in
           </button>
-          <Link href="/signupp">Create New Account</Link>
+          <Link className="btn btn-primary fw-bold text-white" href="/signupp">
+            Create New Account
+          </Link>
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
         </div>
       </form>
     </div>

@@ -3,6 +3,8 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from "react-toastify";
 
 const Signup = () => {
   const [num, setNum] = useState("");
@@ -13,10 +15,9 @@ const Signup = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("hi");
     if (password == repassword) {
       if (email == "" && password == "")
-        return alert("invaild email or password");
+        return toast.error("invaild email or password");
       axios.post("https://66f0f85341537919154f06e7.mockapi.io/signup", {
         num,
         email,
@@ -28,7 +29,7 @@ const Signup = () => {
       setRepassword("");
       router.push("/signin");
     } else {
-      alert("Miss Match Password");
+      toast.warning("Miss Match Password");
     }
   };
   const DeleteData = (id) => {
@@ -103,6 +104,17 @@ const Signup = () => {
           >
             Delete
           </button>
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
         </div>
       </form>
     </div>
