@@ -54,7 +54,7 @@ const Product = () => {
               padding: "10px",
             }}
           >
-            <h5 className="text-white">Product Page</h5>
+            <h5 className="text-white">Product Details Page</h5>
             <Link href="/addproducts" passHref>
               <Button variant="success">Add New Products</Button>
             </Link>
@@ -100,7 +100,7 @@ const Product = () => {
                       </td>
                       <td>
                         <Button
-                          variant="warning"
+                          variant="warning text-white"
                           onClick={() => handleUpdate(data.id)}
                         >
                           Update
