@@ -4,10 +4,8 @@ import MainLayout from "../Layout/MainLayout";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import Navbars from "../components/Navbars";
 import { MdDelete } from "react-icons/md";
-
 function Shopcollection() {
   const [collection, setCollection] = useState([]);
-
   useEffect(() => {
     const collection1 = localStorage.getItem("cartItems");
     if (collection1) {

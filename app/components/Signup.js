@@ -27,7 +27,7 @@ const Signup = () => {
       setEmail("");
       setPassword("");
       setRepassword("");
-      router.push("/signin");
+      router.push("/");
     } else {
       toast.warning("Miss Match Password");
     }

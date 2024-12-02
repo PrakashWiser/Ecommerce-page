@@ -12,6 +12,7 @@ import { TbSkateboard } from "react-icons/tb";
 import { MdLightMode } from "react-icons/md";
 import { FiMoon } from "react-icons/fi";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const DropdownContent = memo(({ items }) => {
   return (
@@ -40,14 +41,19 @@ const DropdownContent = memo(({ items }) => {
 DropdownContent.displayName = "DropdownContent";
 
 function Navbars() {
+  const router = useRouter();
   const [theme, setTheme] = useState("light");
   const [sessionData, setSessionData] = useState(null);
-
+  const [quantity, setQuantity] = useState([]);
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
     if (storedTheme) {
       setTheme(storedTheme);
       document.body.classList.toggle("dark-mode", storedTheme === "dark");
+    }
+    const collection1 = localStorage.getItem("cartItems");
+    if (collection1) {
+      setQuantity(JSON.parse(collection1));
     }
   }, []);
 
@@ -105,10 +111,27 @@ function Navbars() {
             <NavDropdown title="Categories" id="navbarScrollingDropdown">
               <DropdownContent items={dropdownItems} />
             </NavDropdown>
+            <Nav.Link href="https://ecommerce-dasboard.vercel.app/">
+              Dasboard
+            </Nav.Link>
           </Nav>
           <Form className="d-md-flex align-items-center gap-3">
             <Searchbar />
-            <FiShoppingCart aria-label="Shopping Cart" />
+            <div className="position-relative">
+              <FiShoppingCart
+                aria-label="Shopping Cart"
+                size={24}
+                onClick={() => router.push("/shopcollection")}
+              />
+              {quantity.length > 0 && (
+                <span
+                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-white left-10"
+                  style={{ fontSize: "0.75rem", padding: "0.2em 0.6em" }}
+                >
+                  {quantity.length}
+                </span>
+              )}
+            </div>
             <Nav.Link
               onClick={() =>
                 setTheme((prev) => (prev === "light" ? "dark" : "light"))
@@ -124,7 +147,9 @@ function Navbars() {
                 Sign in
               </Link>
             ) : (
-              <Button onClick={handleLogout}>Sign out</Button>
+              <Button className="border-0" onClick={handleLogout}>
+                Sign out
+              </Button>
             )}
           </Form>
         </Navbar.Collapse>
