@@ -99,7 +99,7 @@ function Navbars() {
       expand="lg"
       className="bg-body-tertiary navbar sticky-top text_black"
     >
-      <Container>
+      <Container fluid>
         <Navbar.Brand className="fw600 d-flex gap-2" href="/">
           <TbSkateboard aria-label="Logo" />
           Skaters
@@ -117,8 +117,9 @@ function Navbars() {
           </Nav>
           <Form className="d-md-flex align-items-center gap-3">
             <Searchbar />
-            <div className="position-relative">
+            <span className="position-relative">
               <FiShoppingCart
+                style={{ cursor: "pointer" }}
                 aria-label="Shopping Cart"
                 size={24}
                 onClick={() => router.push("/shopcollection")}
@@ -131,7 +132,7 @@ function Navbars() {
                   {quantity.length}
                 </span>
               )}
-            </div>
+            </span>
             <Nav.Link
               onClick={() =>
                 setTheme((prev) => (prev === "light" ? "dark" : "light"))

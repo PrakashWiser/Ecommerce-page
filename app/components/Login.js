@@ -82,6 +82,7 @@ const Login = () => {
           <Link className="btn btn-primary fw-bold text-white" href="/signupp">
             Create New Account
           </Link>
+        </div>
           <ToastContainer
             position="top-right"
             autoClose={3000}
@@ -93,7 +94,6 @@ const Login = () => {
             draggable
             pauseOnHover
           />
-        </div>
       </form>
     </div>
   );

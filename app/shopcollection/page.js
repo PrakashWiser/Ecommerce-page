@@ -24,12 +24,12 @@ function Shopcollection() {
   };
 
   return (
-    <MainLayout styles="py-5">
-      <Container>
+    <MainLayout >
         <Navbars />
         <h3 className="text-center my-5 text-decoration-underline">
-          Your Buy Now Products
+          Your Items
         </h3>
+      <Container>
         <Row className="align-items-center justify-content-center">
           {collection.length > 0 ? (
             collection.map((item, index) => (
@@ -38,7 +38,7 @@ function Shopcollection() {
                   <img
                     src={Giturl + item.image}
                     alt={`${item.name}-${index}`}
-                    className="shop_collection img-fluid"
+                    className="shop_collection img-fluid mb-3"
                   />
                 </Col>
                 <Col md={6}>
