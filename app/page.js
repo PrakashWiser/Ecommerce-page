@@ -173,7 +173,7 @@ export default function Home() {
                 >
                   <GiHeadphones />
                   <h4>mobile</h4>
-                  <span>9 products</span>
+                  <span> 11 products</span>
                 </div>
               </Col>
             </Row>

@@ -181,7 +181,7 @@ hr,
 .width_tybe {
   width: 100%;
 }
-.home_sec_three .card{
+.home_sec_three .card {
   cursor: pointer;
 }
 .home_sec_three .shadow:hover {
@@ -197,6 +197,9 @@ hr,
 .shop_collection{
   width: 300px;
   height: 200px;
+}
+.height_tybe{
+  height: 480px;
 }
 @media (min-width: 1200px) {
   .home_sec_one h1 {
@@ -218,6 +221,10 @@ hr,
   .width_tybe {
     width: 50%;
   }
+  .shop_collection {
+    width: 300px !important;
+    height: 200px !important;
+  }
 }
 @media (max-width: 768px) {
   .home_sec_one h1,
@@ -234,7 +241,7 @@ hr,
   .home_sec_one a {
     font-size: 13px !important;
   }
-  .home_sec_three .img_details{
+  .home_sec_three .img_details {
     width: 100%;
     height: auto;
   }

@@ -98,11 +98,19 @@ function Blog({ params }) {
             {filterData.map((item) => (
               <React.Fragment key={item.id}>
                 <Col md={5}>
-                  <img
-                    src={`${Giturl}${item.image}`}
-                    alt={item.name}
-                    className="img-fluid"
-                  />
+                  {item.id ==="37" ? (
+                    <img
+                      src={`${Giturl}${item.image}`}
+                      alt={item.name}
+                      className="height_tybe"
+                    />
+                  ) : (
+                    <img  
+                      src={`${Giturl}${item.image}`}
+                      alt={item.name}
+                      className="img-fluid"
+                    />
+                  )}
                 </Col>
                 <Col md={7}>
                   <h2>{item.name}</h2>

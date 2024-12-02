@@ -40,7 +40,7 @@ function Shopcollection() {
                   <img
                     src={Giturl + item.image}
                     alt={`${item.name}-${index}`}
-                    className="shop_collection"
+                    className="shop_collection img-fluid"
                   />
                 </Col>
                 <Col md={6}>
