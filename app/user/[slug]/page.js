@@ -67,7 +67,6 @@ function Blog({ params }) {
 
   const handleBuyNow = (item) => {
     const amount = item.price;
-
     console.log(`Redirecting to payment gateway with amount: $${amount}`);
   };
 

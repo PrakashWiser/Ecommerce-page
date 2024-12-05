@@ -33,10 +33,12 @@ const Signup = () => {
     }
   };
   const DeleteData = (id) => {
-    axios.delete(`https://66f0f85341537919154f06e7.mockapi.io/signup/1`);
+    axios
+      .delete(`https://66f0f85341537919154f06e7.mockapi.io/signup/${id}`)
+      .then("https://66f0f85341537919154f06e7.mockapi.io/signup");
   };
   return (
-    <div className="container d-flex flex-column justify-content-center align-items-center vh-100 text-white">
+    <div className="container d-flex flex-column justify-content-center align-items-center vh-100 text_white">
       <h1 className="fw-bold text-danger">Sign Up</h1>
       <form className="width_tybe" onSubmit={handleSubmit}>
         <div className="mb-3">
@@ -93,29 +95,32 @@ const Signup = () => {
             onChange={(e) => setRepassword(e.target.value)}
           />
         </div>
-        <div className="d-flex justify-content-between my-4">
-          <button type="submit" className="btn btn-warning  fw-bold px-4">
+        <div className="d-flex justify-content-between my-4 ">
+          <button
+            type="submit"
+            className="btn btn-warning  fw-bold px-4 text-white"
+          >
             Sign up
           </button>
           <button
-            onClick={() => DeleteData(id)}
+            onClick={() => DeleteData("4")}
             type="submit"
             className="btn btn-danger  fw-bold px-4"
           >
             Delete
           </button>
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-          />
         </div>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </form>
     </div>
   );

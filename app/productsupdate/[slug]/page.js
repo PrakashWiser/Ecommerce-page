@@ -79,11 +79,11 @@ const UpdatePro = ({ params }) => {
 
   return (
     <Container>
-      <div className=" form_width_tybe vh-100 d-flex flex-column justify-content-center">
+      <div className="  vh-100 d-flex flex-column justify-content-center align-items-center">
         <div style={{ display: "flex", justifyContent: "center" }}>
           <h2 className="mt-3 mb-4">Update Product</h2>
         </div>
-        <form onSubmit={handleSubmit}>
+        <form className="width_tybe" onSubmit={handleSubmit}>
           <div className="mb-3">
             <label htmlFor="image" className="form-label">
               Image
