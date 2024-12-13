@@ -6,7 +6,9 @@ import { Container, Row, Col, Button } from "react-bootstrap";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import { useRouter } from "next/navigation";
 import Navbars from "@/app/components/Navbars";
+import Modal from "react-bootstrap/Modal";
 import { RiDeleteBin5Line } from "react-icons/ri";
+import QrImg from "../../assets/images/Untitled.svg";
 function Blog({ params }) {
   const { slug: value } = use(params);
 
@@ -16,6 +18,7 @@ function Blog({ params }) {
   const [cartItems, setCartItems] = useState([]);
   const [data, setData] = useState([]);
   const router = useRouter();
+  const [show, setShow] = useState(false);
   const Giturl =
     "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
 
@@ -66,6 +69,7 @@ function Blog({ params }) {
   };
 
   const handleBuyNow = (item) => {
+    setShow(true);
     const amount = item.price;
     console.log(`Redirecting to payment gateway with amount: $${amount}`);
   };
@@ -87,7 +91,7 @@ function Blog({ params }) {
 
     return total.toFixed(2);
   };
-
+  const handleClose = () => setShow(false);
   return (
     <MainLayout>
       <Navbars />
@@ -97,14 +101,14 @@ function Blog({ params }) {
             {filterData.map((item) => (
               <React.Fragment key={item.id}>
                 <Col md={5}>
-                  {item.id ==="37" ? (
+                  {item.id === "37" ? (
                     <img
                       src={`${Giturl}${item.image}`}
                       alt={item.name}
                       className="height_tybe"
                     />
                   ) : (
-                    <img  
+                    <img
                       src={`${Giturl}${item.image}`}
                       alt={item.name}
                       className="img-fluid"
@@ -236,6 +240,13 @@ function Blog({ params }) {
               </React.Fragment>
             ))}
           </Row>
+          <Modal show={show} onHide={handleClose}>
+            <img
+              src={`${Giturl}${QrImg}`}
+              alt={item.name}
+              className="height_tybe"
+            />
+          </Modal>
         </Container>
       )}
     </MainLayout>
