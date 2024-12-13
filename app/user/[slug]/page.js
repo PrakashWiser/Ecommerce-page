@@ -9,8 +9,6 @@ import Navbars from "@/app/components/Navbars";
 import Modal from "react-bootstrap/Modal";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import QrImg from "../../assets/images/qr-whatsapp.svg";
-console.log(QrImg);
-
 function Blog({ params }) {
   const { slug: value } = use(params);
 
@@ -243,10 +241,20 @@ function Blog({ params }) {
             ))}
           </Row>
           <Modal show={show} onHide={handleClose}>
-            <img
-              src={`${Giturl}${QrImg.src}`}
-              className="height_tybe"
-            />
+            <div style={{ position: "relative" }}>
+              <img src={QrImg.src} className="height_tybe" alt="QR code" />
+              <RiDeleteBin5Line
+                onClick={() => setShow(false)}
+                style={{
+                  position: "absolute",
+                  top: "10px",
+                  right: "10px",
+                  cursor: "pointer",
+                  fontSize: "1.5rem",
+                  color: "red",
+                }}
+              />
+            </div>
           </Modal>
         </Container>
       )}
