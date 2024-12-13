@@ -8,7 +8,9 @@ import { useRouter } from "next/navigation";
 import Navbars from "@/app/components/Navbars";
 import Modal from "react-bootstrap/Modal";
 import { RiDeleteBin5Line } from "react-icons/ri";
-import QrImg from "../../assets/images/Untitled.svg";
+import QrImg from "../../assets/images/qr-whatsapp.svg";
+console.log(QrImg);
+
 function Blog({ params }) {
   const { slug: value } = use(params);
 
@@ -242,8 +244,7 @@ function Blog({ params }) {
           </Row>
           <Modal show={show} onHide={handleClose}>
             <img
-              src={`${Giturl}${QrImg}`}
-              alt={item.name}
+              src={`${Giturl}${QrImg.src}`}
               className="height_tybe"
             />
           </Modal>
