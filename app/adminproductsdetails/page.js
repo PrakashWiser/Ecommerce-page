@@ -38,7 +38,7 @@ const Product = () => {
   };
 
   const handleUpdate = (id) => {
-    router.push(`/productsupdate/${id}`);
+    router.push(`/adminproductsupdate/${id}`);
   };
 
   return (

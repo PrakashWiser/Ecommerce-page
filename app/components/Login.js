@@ -32,7 +32,7 @@ const Login = () => {
           if (password == EmailData[0]?.password) {
             let Admin = EmailData[0].email;
             if (Admin == "prakashlunatic2@gmail.com") {
-              router.push("/productsdetails");
+              router.push("/aminproductsdetails");
               sessionStorage.setItem("Admin", EmailData[0].email);
             } else {
               router.push("/");

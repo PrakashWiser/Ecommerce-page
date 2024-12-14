@@ -55,7 +55,7 @@ export default function Home() {
     : filteredData.slice(0, 8);
 
   const handleclcik = (id) => {
-    router.push(`/user/${id}`);
+    router.push(`/userproductsdetails/${id}`);
   };
   let LengthData = filteredData.length;
   return (
@@ -95,7 +95,7 @@ export default function Home() {
                   <div className="d-flex gap-3">
                     <Link
                       className="rounded-pill fw600 bg_green py-2 px-3 text-white"
-                      href="/shopcollection"
+                      href="/usershopcollection"
                     >
                       Buy Now
                     </Link>
@@ -130,7 +130,7 @@ export default function Home() {
                 </p>
               </li>
               <li>
-                <Link href="/shopcollection" className="primary_color">
+                <Link href="/usershopcollection" className="primary_color">
                   Shop the Collection <FaArrowRight className="svg_frist" />
                 </Link>
               </li>
@@ -191,7 +191,7 @@ export default function Home() {
                 <p>Explore all products we offer from around the world</p>
               </li>
               <li>
-                <Link href="/shopcollection" className="primary_color">
+                <Link href="/usershopcollection" className="primary_color">
                   Shop the Collection <FaArrowRight className="svg_frist" />
                 </Link>
               </li>

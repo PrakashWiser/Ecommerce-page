@@ -19,7 +19,6 @@ function Shopcollection() {
   const handleClick = (id) => {
     const updatedCollection = collection.filter((item) => item.id !== id);
     setCollection(updatedCollection);
-
     localStorage.setItem("cartItems", JSON.stringify(updatedCollection));
   };
 

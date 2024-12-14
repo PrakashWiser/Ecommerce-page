@@ -87,7 +87,7 @@ function Navbars() {
     ],
     [
       {
-        href: "/productsdetails",
+        href: "/adminproductsdetails",
         title: "Create Store",
         description: "Start selling products",
       },
