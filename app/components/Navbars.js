@@ -122,7 +122,7 @@ function Navbars() {
                 style={{ cursor: "pointer" }}
                 aria-label="Shopping Cart"
                 size={24}
-                onClick={() => router.push("/shopcollection")}
+                onClick={() => router.push("/usershopcollection")}
               />
               {quantity.length > 0 && (
                 <span
