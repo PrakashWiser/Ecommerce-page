@@ -23,11 +23,9 @@ function Shopcollection() {
   };
 
   return (
-    <MainLayout >
-        <Navbars />
-        <h3 className="text-center my-5 text-decoration-underline">
-          Your Items
-        </h3>
+    <MainLayout>
+      <Navbars />
+      <h3 className="text-center my-5 text-decoration-underline">Your Items</h3>
       <Container>
         <Row className="align-items-center justify-content-center">
           {collection.length > 0 ? (
@@ -52,7 +50,8 @@ function Shopcollection() {
                 </Col>
                 <Col md={1} className="d-flex align-items-center py-3 py-md-0">
                   <MdDelete
-                    className="text-danger fs-1 cursor-pointer"
+                    style={{ cursor: "pointer" }}
+                    className="text-danger fs-1"
                     onClick={() => handleClick(item.id)}
                     title="Remove item"
                   />
