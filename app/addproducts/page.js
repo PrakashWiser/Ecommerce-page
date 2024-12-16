@@ -37,7 +37,7 @@ const AddProduct = () => {
     setImage("");
     setImageData("");
     setListingType("others");
-    router.push("/productsdetails");
+    router.push("/adminproductsdetails");
   };
 
   const handleImageChange = (e) => {
@@ -139,6 +139,7 @@ const AddProduct = () => {
             <option value="shoe">Shoe</option>
             <option value="headphone">HeadPhone</option>
             <option value="mobile">Mobiles</option>
+            <option value="laptop">Laptop</option>
             <option value="others">Others</option>
           </select>
         </div>
