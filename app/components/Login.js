@@ -2,51 +2,51 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ImGithub } from "react-icons/im";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+
 const Login = () => {
   const [apiData, setApiData] = useState([]);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const router = useRouter();
+
   useEffect(() => {
     axios
       .get("https://66f0f85341537919154f06e7.mockapi.io/signup")
       .then((response) => {
         setApiData(response.data);
-      });
+      })
+      .catch(() => toast.error("Failed to fetch user data"));
   }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (email) {
-      if (password) {
-        let EmailData = apiData.filter((items) => items.email == email);
-        if (EmailData.length == 0) {
-          toast.error("can't see your email, pls register first");
-          router.push("/signupp");
-        } else {
-          if (password == EmailData[0]?.password) {
-            let Admin = EmailData[0].email;
-            if (Admin == "prakashlunatic2@gmail.com") {
-              router.push("/adminproductsdetails");
-              sessionStorage.setItem("Admin", EmailData[0].email);
-            } else {
-              router.push("/");
-              localStorage.setItem("Data", EmailData[0].email);
-            }
-          } else {
-            toast.warning("please enter correct password");
-          }
-        }
-      } else {
-        toast.warning("please fill the password");
-      }
+  const validationSchema = Yup.object().shape({
+    email: Yup.string()
+      .email("Invalid email format")
+      .required("Email is required"),
+    password: Yup.string().required("Password is required"),
+  });
+
+  const handleSubmit = (values) => {
+    const { email, password } = values;
+
+    const user = apiData.find((item) => item.email === email);
+    if (!user) {
+      toast.error("Can't find your email, please register first");
+      router.push("/signupp");
+    } else if (user.password !== password) {
+      toast.warning("Incorrect password, please try again");
     } else {
-      toast.warning("please fill the email");
+      if (user.email === "prakashlunatic2@gmail.com") {
+        sessionStorage.setItem("Admin", user.email);
+        router.push("/adminproductsdetails");
+      } else {
+        localStorage.setItem("Data", user.email);
+        router.push("/");
+      }
     }
   };
 
@@ -56,46 +56,70 @@ const Login = () => {
         <ImGithub className="fs-4 text-dark text_white" />
       </a>
       <h1 className="fw-bold text-success py-4">Sign in</h1>
-      <form className="width_tybe" onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <input
-            type="email"
-            className="form-control"
-            id="email"
-            placeholder="Enter Email"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="mb-3">
-          <input
-            type="password"
-            className="form-control"
-            id="password"
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter Password"
-          />
-        </div>
-        <div className="d-flex justify-content-between mt-4">
-          <button type="submit" className="btn btn-primary fw-bold">
-            Sign in
-          </button>
-          <Link className="btn btn-primary fw-bold text-white" href="/signupp">
-            Create New Account
-          </Link>
-        </div>
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-          />
-      </form>
+      <Formik
+        initialValues={{ email: "", password: "" }}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting }) => (
+          <Form className="width_tybe">
+            <div className="mb-3">
+              <Field
+                type="email"
+                name="email"
+                className="form-control"
+                placeholder="Enter Email"
+              />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="text-danger"
+              />
+            </div>
+            <div className="mb-3">
+              <Field
+                type="password"
+                name="password"
+                className="form-control"
+                placeholder="Enter Password"
+              />
+              <ErrorMessage
+                name="password"
+                component="div"
+                className="text-danger"
+              />
+            </div>
+            <div className="d-flex justify-content-between mt-4">
+              <button
+                type="submit"
+                className="btn btn-primary fw-bold"
+                disabled={isSubmitting}
+              >
+                Sign in
+              </button>
+              <Link
+                className="btn btn-primary fw-bold text-white"
+                href="/signupp"
+              >
+                Create New Account
+              </Link>
+            </div>
+          </Form>
+        )}
+      </Formik>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };
+
 export default Login;

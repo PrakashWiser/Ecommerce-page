@@ -30,7 +30,7 @@ export default function Home() {
         );
         setAPIData(response.data);
       } catch (error) {
-        console.error("Error fetching data:", error);
+       alert(error)
       }
     };
 

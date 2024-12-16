@@ -2,127 +2,163 @@
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
 const Signup = () => {
-  const [num, setNum] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [repassword, setRepassword] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (password == repassword) {
-      if (email == "" && password == "")
-        return toast.error("invaild email or password");
-      axios.post("https://66f0f85341537919154f06e7.mockapi.io/signup", {
+  const validationSchema = Yup.object().shape({
+    num: Yup.string()
+      .matches(/^\d+$/, "Must be a number")
+      .required("Number is required"),
+    email: Yup.string()
+      .email("Invalid email format")
+      .required("Email is required"),
+    password: Yup.string()
+      .min(6, "Password must be at least 6 characters")
+      .required("Password is required"),
+    repassword: Yup.string()
+      .oneOf([Yup.ref("password"), null], "Passwords must match")
+      .required("Confirm password is required"),
+  });
+
+  const handleSubmit = (values, { resetForm }) => {
+    const { num, email, password } = values;
+
+    axios
+      .post("https://66f0f85341537919154f06e7.mockapi.io/signup", {
         num,
         email,
         password,
-      });
-      setNum("");
-      setEmail("");
-      setPassword("");
-      setRepassword("");
-      router.push("/");
-    } else {
-      toast.warning("Miss Match Password");
-    }
+      })
+      .then(() => {
+        toast.success("Signup successful");
+        resetForm();
+        router.push("/");
+      })
+      .catch(() => toast.error("Failed to sign up"));
   };
-  const DeleteData = (id) => {
+
+  const deleteData = (id) => {
     axios
       .delete(`https://66f0f85341537919154f06e7.mockapi.io/signup/${id}`)
-      .then("https://66f0f85341537919154f06e7.mockapi.io/signup");
+      .then(() => toast.success("Data deleted successfully"))
+      .catch(() => toast.error("Failed to delete data"));
   };
+
   return (
     <div className="container d-flex flex-column justify-content-center align-items-center vh-100 text_white">
       <h1 className="fw-bold text-danger">Sign Up</h1>
-      <form className="width_tybe" onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label htmlFor="name" className="form-label">
-            Number
-          </label>
-          <input
-            type="number"
-            className="form-control"
-            id="name"
-            placeholder="Enter Number"
-            value={num}
-            onChange={(e) => setNum(e.target.value)}
-          />
-        </div>
+      <Formik
+        initialValues={{ num: "", email: "", password: "", repassword: "" }}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting }) => (
+          <Form className="width_tybe">
+            <div className="mb-3">
+              <label htmlFor="num" className="form-label">
+                Number
+              </label>
+              <Field
+                type="text"
+                name="num"
+                className="form-control"
+                placeholder="Enter Number"
+              />
+              <ErrorMessage
+                name="num"
+                component="div"
+                className="text-danger"
+              />
+            </div>
 
-        <div className="mb-3">
-          <label htmlFor="name" className="form-label">
-            Email
-          </label>
-          <input
-            type="email"
-            className="form-control"
-            id="email"
-            placeholder="Enter Eamil"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
+            <div className="mb-3">
+              <label htmlFor="email" className="form-label">
+                Email
+              </label>
+              <Field
+                type="email"
+                name="email"
+                className="form-control"
+                placeholder="Enter Email"
+              />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="text-danger"
+              />
+            </div>
 
-        <div className="mb-3">
-          <label htmlFor="name" className="form-label">
-            Password
-          </label>
-          <input
-            type="password"
-            className="form-control"
-            id="password"
-            placeholder="Enter Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="name" className="form-label">
-            Conform Password
-          </label>
-          <input
-            type="password"
-            placeholder="Re-Enter  Password"
-            className="form-control"
-            id="repassword"
-            value={repassword}
-            onChange={(e) => setRepassword(e.target.value)}
-          />
-        </div>
-        <div className="d-flex justify-content-between my-4 ">
-          <button
-            type="submit"
-            className="btn btn-warning  fw-bold px-4 text-white"
-          >
-            Sign up
-          </button>
-          <button
-            onClick={() => DeleteData("4")}
-            type="submit"
-            className="btn btn-danger  fw-bold px-4"
-          >
-            Delete
-          </button>
-        </div>
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
-      </form>
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">
+                Password
+              </label>
+              <Field
+                type="password"
+                name="password"
+                className="form-control"
+                placeholder="Enter Password"
+              />
+              <ErrorMessage
+                name="password"
+                component="div"
+                className="text-danger"
+              />
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="repassword" className="form-label">
+                Confirm Password
+              </label>
+              <Field
+                type="password"
+                name="repassword"
+                className="form-control"
+                placeholder="Re-Enter Password"
+              />
+              <ErrorMessage
+                name="repassword"
+                component="div"
+                className="text-danger"
+              />
+            </div>
+
+            <div className="d-flex justify-content-between my-4">
+              <button
+                type="submit"
+                className="btn btn-warning fw-bold px-4 text-white"
+                disabled={isSubmitting}
+              >
+                Sign up
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteData("4")}
+                className="btn btn-danger fw-bold px-4"
+              >
+                Delete
+              </button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };
+
 export default Signup;
