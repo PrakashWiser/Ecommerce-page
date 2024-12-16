@@ -54,7 +54,7 @@ const UpdatePro = ({ params }) => {
         setImage("");
         setListingType("others");
         setImageData(null);
-        router.push("/productsdetails");
+        router.push("/adminproductsdetails");
       })
       .catch((error) => {
         console.error("Error updating product:", error);
@@ -146,6 +146,7 @@ const UpdatePro = ({ params }) => {
             </label>
             <textarea
               className="form-control"
+              style={{resize:"none"}}
               id="discription"
               rows={5}
               value={discription}
