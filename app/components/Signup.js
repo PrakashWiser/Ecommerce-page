@@ -6,6 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import Link from "next/link";
 
 const Signup = () => {
   const router = useRouter();
@@ -59,7 +60,6 @@ const Signup = () => {
         >
           {({ isSubmitting }) => (
             <Form>
-              {/* Number */}
               <div className="mb-3">
                 <label htmlFor="num" className="form-label fw-semibold">
                   Number
@@ -78,7 +78,6 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Email */}
               <div className="mb-3">
                 <label htmlFor="email" className="form-label fw-semibold">
                   Email
@@ -97,7 +96,6 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Password */}
               <div className="mb-3">
                 <label htmlFor="password" className="form-label fw-semibold">
                   Password
@@ -116,7 +114,6 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Confirm Password */}
               <div className="mb-3">
                 <label htmlFor="repassword" className="form-label fw-semibold">
                   Confirm Password
@@ -135,7 +132,6 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Buttons */}
               <div className="d-grid gap-2">
                 <button
                   type="submit"
@@ -144,10 +140,7 @@ const Signup = () => {
                 >
                   Sign Up
                 </button>
-                <button
-                  type="reset"
-                  className="btn btn-outline-danger fw-bold"
-                >
+                <button type="reset" className="btn btn-outline-danger fw-bold">
                   Reset
                 </button>
               </div>
@@ -156,9 +149,9 @@ const Signup = () => {
         </Formik>
         <p className="text-center mt-3 small text-muted">
           Already have an account?{" "}
-          <a href="/" className="text-decoration-none text-primary">
+          <Link href="/" className="text-decoration-none text-primary">
             Login here
-          </a>
+          </Link>
         </p>
         <ToastContainer
           position="top-right"
