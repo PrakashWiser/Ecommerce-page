@@ -12,7 +12,7 @@ const Signup = () => {
 
   const validationSchema = Yup.object().shape({
     num: Yup.string()
-      .matches(/^\d+$/, "Must be a number")
+      .matches(/^\d+$/, "Must contain only numbers")
       .required("Number is required"),
     email: Yup.string()
       .email("Invalid email format")
@@ -35,128 +35,140 @@ const Signup = () => {
         password,
       })
       .then(() => {
-        toast.success("Signup successful");
+        toast.success("Signup successful!");
         resetForm();
         router.push("/");
       })
-      .catch(() => toast.error("Failed to sign up"));
-  };
-
-  const deleteData = (id) => {
-    axios
-      .delete(`https://66f0f85341537919154f06e7.mockapi.io/signup/${id}`)
-      .then(() => toast.success("Data deleted successfully"))
-      .catch(() => toast.error("Failed to delete data"));
+      .catch(() => toast.error("Signup failed, please try again."));
   };
 
   return (
-    <div className="container d-flex flex-column justify-content-center align-items-center vh-100 text_white">
-      <h1 className="fw-bold text-danger">Sign Up</h1>
-      <Formik
-        initialValues={{ num: "", email: "", password: "", repassword: "" }}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
+    <div
+      className="container d-flex justify-content-center align-items-center vh-100"
+      style={{ backgroundColor: "#f8f9fa" }}
+    >
+      <div
+        className="card shadow p-4 w-100"
+        style={{ maxWidth: "400px", borderRadius: "12px" }}
       >
-        {({ isSubmitting }) => (
-          <Form className="width_tybe">
-            <div className="mb-3">
-              <label htmlFor="num" className="form-label">
-                Number
-              </label>
-              <Field
-                type="text"
-                name="num"
-                className="form-control"
-                placeholder="Enter Number"
-              />
-              <ErrorMessage
-                name="num"
-                component="div"
-                className="text-danger"
-              />
-            </div>
+        <h2 className="text-center fw-bold text-primary mb-4">Sign Up</h2>
+        <Formik
+          initialValues={{ num: "", email: "", password: "", repassword: "" }}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ isSubmitting }) => (
+            <Form>
+              {/* Number */}
+              <div className="mb-3">
+                <label htmlFor="num" className="form-label fw-semibold">
+                  Number
+                </label>
+                <Field
+                  type="text"
+                  name="num"
+                  id="num"
+                  className="form-control"
+                  placeholder="Enter your number"
+                />
+                <ErrorMessage
+                  name="num"
+                  component="div"
+                  className="text-danger small"
+                />
+              </div>
 
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label">
-                Email
-              </label>
-              <Field
-                type="email"
-                name="email"
-                className="form-control"
-                placeholder="Enter Email"
-              />
-              <ErrorMessage
-                name="email"
-                component="div"
-                className="text-danger"
-              />
-            </div>
+              {/* Email */}
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label fw-semibold">
+                  Email
+                </label>
+                <Field
+                  type="email"
+                  name="email"
+                  id="email"
+                  className="form-control"
+                  placeholder="Enter your email"
+                />
+                <ErrorMessage
+                  name="email"
+                  component="div"
+                  className="text-danger small"
+                />
+              </div>
 
-            <div className="mb-3">
-              <label htmlFor="password" className="form-label">
-                Password
-              </label>
-              <Field
-                type="password"
-                name="password"
-                className="form-control"
-                placeholder="Enter Password"
-              />
-              <ErrorMessage
-                name="password"
-                component="div"
-                className="text-danger"
-              />
-            </div>
+              {/* Password */}
+              <div className="mb-3">
+                <label htmlFor="password" className="form-label fw-semibold">
+                  Password
+                </label>
+                <Field
+                  type="password"
+                  name="password"
+                  id="password"
+                  className="form-control"
+                  placeholder="Enter your password"
+                />
+                <ErrorMessage
+                  name="password"
+                  component="div"
+                  className="text-danger small"
+                />
+              </div>
 
-            <div className="mb-3">
-              <label htmlFor="repassword" className="form-label">
-                Confirm Password
-              </label>
-              <Field
-                type="password"
-                name="repassword"
-                className="form-control"
-                placeholder="Re-Enter Password"
-              />
-              <ErrorMessage
-                name="repassword"
-                component="div"
-                className="text-danger"
-              />
-            </div>
+              {/* Confirm Password */}
+              <div className="mb-3">
+                <label htmlFor="repassword" className="form-label fw-semibold">
+                  Confirm Password
+                </label>
+                <Field
+                  type="password"
+                  name="repassword"
+                  id="repassword"
+                  className="form-control"
+                  placeholder="Re-enter your password"
+                />
+                <ErrorMessage
+                  name="repassword"
+                  component="div"
+                  className="text-danger small"
+                />
+              </div>
 
-            <div className="d-flex justify-content-between my-4">
-              <button
-                type="submit"
-                className="btn btn-warning fw-bold px-4 text-white"
-                disabled={isSubmitting}
-              >
-                Sign up
-              </button>
-              <button
-                type="button"
-                onClick={() => deleteData("4")}
-                className="btn btn-danger fw-bold px-4"
-              >
-                Delete
-              </button>
-            </div>
-          </Form>
-        )}
-      </Formik>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+              {/* Buttons */}
+              <div className="d-grid gap-2">
+                <button
+                  type="submit"
+                  className="btn btn-primary fw-bold"
+                  disabled={isSubmitting}
+                >
+                  Sign Up
+                </button>
+                <button
+                  type="reset"
+                  className="btn btn-outline-danger fw-bold"
+                >
+                  Reset
+                </button>
+              </div>
+            </Form>
+          )}
+        </Formik>
+        <p className="text-center mt-3 small text-muted">
+          Already have an account?{" "}
+          <a href="/" className="text-decoration-none text-primary">
+            Login here
+          </a>
+        </p>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+        />
+      </div>
     </div>
   );
 };

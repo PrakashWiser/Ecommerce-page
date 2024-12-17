@@ -33,16 +33,13 @@ function Blog({ params }) {
         console.error("Error fetching data:", error);
       }
     };
-
     GetData();
-
     let Datas = localStorage.getItem("Data");
     if (Datas) {
       setData(Datas);
     } else {
       router.push("/signin");
     }
-
     const savedCart = localStorage.getItem("cartItems");
     if (savedCart) {
       setCartItems(JSON.parse(savedCart));

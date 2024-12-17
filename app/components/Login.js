@@ -51,57 +51,64 @@ const Login = () => {
   };
 
   return (
-    <div className="container text-white d-flex flex-column justify-content-center align-items-center vh-100">
-      <a href="https://github.com/prakashwiser/">
-        <ImGithub className="fs-4 text-dark text_white" />
-      </a>
-      <h1 className="fw-bold text-success py-4">Sign in</h1>
+    <div className="container d-flex flex-column justify-content-center align-items-center vh-100">
+      <div className="text-center">
+        <a href="https://github.com/prakashwiser/" target="_blank" rel="noopener noreferrer">
+          <ImGithub className="fs-2 text-dark mb-3" />
+        </a>
+        <h1 className="fw-bold text-success mb-4">Sign in</h1>
+      </div>
       <Formik
         initialValues={{ email: "", password: "" }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
         {({ isSubmitting }) => (
-          <Form className="width_tybe">
+          <Form className="w-100" style={{ maxWidth: "400px" }}>
             <div className="mb-3">
+              <label htmlFor="email" className="form-label">
+                Email
+              </label>
               <Field
                 type="email"
                 name="email"
-                className="form-control"
+                id="email"
+                className="form-control shadow-sm"
                 placeholder="Enter Email"
               />
               <ErrorMessage
                 name="email"
                 component="div"
-                className="text-danger"
+                className="text-danger mt-1"
               />
             </div>
             <div className="mb-3">
+              <label htmlFor="password" className="form-label">
+                Password
+              </label>
               <Field
                 type="password"
                 name="password"
-                className="form-control"
+                id="password"
+                className="form-control shadow-sm"
                 placeholder="Enter Password"
               />
               <ErrorMessage
                 name="password"
                 component="div"
-                className="text-danger"
+                className="text-danger mt-1"
               />
             </div>
-            <div className="d-flex justify-content-between mt-4">
+            <div className="d-flex justify-content-between align-items-center mt-4">
               <button
                 type="submit"
-                className="btn btn-primary fw-bold"
+                className="btn btn-success fw-bold shadow-sm px-4"
                 disabled={isSubmitting}
               >
                 Sign in
               </button>
-              <Link
-                className="btn btn-primary fw-bold text-white"
-                href="/signupp"
-              >
-                Create New Account
+              <Link href="/signupp" className="btn btn-outline-primary fw-bold shadow-sm px-4">
+                Create Account
               </Link>
             </div>
           </Form>
