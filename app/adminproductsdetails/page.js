@@ -1,22 +1,25 @@
 "use client";
-"use strict";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Table, Button, Container } from "react-bootstrap";
 import { useRouter } from "next/navigation";
+
 const Product = () => {
   const router = useRouter();
   const [APIData, setAPIData] = useState([]);
-  const [admin, setAdmin] = useState([]);
+  const [admin, setAdmin] = useState(null);
+
   useEffect(() => {
+    const adminSession = sessionStorage.getItem("Admin");
+    setAdmin(adminSession);
+
     axios
       .get(`https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products`)
       .then((response) => {
         setAPIData(response.data);
       });
-    setAdmin(sessionStorage.getItem("Admin"));
   }, []);
 
   const getData = () => {
@@ -40,6 +43,10 @@ const Product = () => {
   const handleUpdate = (id) => {
     router.push(`/adminproductsupdate/${id}`);
   };
+
+  if (admin === null) {
+    return <div className="text-center">Loading....</div>;
+  }
 
   return (
     <>

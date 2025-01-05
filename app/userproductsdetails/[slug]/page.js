@@ -4,11 +4,11 @@ import MainLayout from "@/app/Layout/MainLayout";
 import axios from "axios";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import Offcanvas from "react-bootstrap/Offcanvas";
-import { useRouter } from "next/navigation";
 import Navbars from "@/app/components/Navbars";
 import Modal from "react-bootstrap/Modal";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import QrImg from "../../assets/images/qr-whatsapp.svg";
+import { useRouter } from "next/navigation";
 function Blog({ params }) {
   const { slug: value } = use(params);
 

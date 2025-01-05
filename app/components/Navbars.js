@@ -1,75 +1,78 @@
 "use client";
+
 import { useState, useEffect, memo } from "react";
-import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
-import Nav from "react-bootstrap/Nav";
-import Navbar from "react-bootstrap/Navbar";
-import NavDropdown from "react-bootstrap/NavDropdown";
-import { Button } from "react-bootstrap";
-import Searchbar from "./Searchbar";
-import { FiShoppingCart } from "react-icons/fi";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  Navbar,
+  Container,
+  Nav,
+  NavDropdown,
+  Form,
+  Button,
+} from "react-bootstrap";
+import { FiShoppingCart, FiMoon } from "react-icons/fi";
 import { TbSkateboard } from "react-icons/tb";
 import { MdLightMode } from "react-icons/md";
-import { FiMoon } from "react-icons/fi";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Searchbar from "./Searchbar";
 
-const DropdownContent = memo(({ items }) => {
-  return (
-    <div className="d-md-flex">
-      {items.map((section, index) => (
-        <div key={index} className="me-3">
-          {section.map((item, idx) => (
-            <NavDropdown.Item
-              href={item.href}
-              key={idx}
-              className="nav-dropdown-item"
-            >
-              <div>{item.title}</div>
-              <p>{item.description}</p>
-            </NavDropdown.Item>
-          ))}
-          {index < items.length - 1 && (
-            <NavDropdown.Divider className="nav-dropdown-divider" />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-});
-
+const DropdownContent = memo(({ items }) => (
+  <div className="d-md-flex">
+    {items.map((section, index) => (
+      <div key={index} className="me-3">
+        {section.map((item, idx) => (
+          <NavDropdown.Item
+            href={item.href}
+            key={idx}
+            className="nav-dropdown-item"
+          >
+            <div>{item.title}</div>
+            <p>{item.description}</p>
+          </NavDropdown.Item>
+        ))}
+        {index < items.length - 1 && (
+          <NavDropdown.Divider className="nav-dropdown-divider" />
+        )}
+      </div>
+    ))}
+  </div>
+));
 DropdownContent.displayName = "DropdownContent";
 
 function Navbars() {
   const router = useRouter();
   const [theme, setTheme] = useState("light");
   const [sessionData, setSessionData] = useState(null);
-  const [quantity, setQuantity] = useState([]);
+  const [cartQuantity, setCartQuantity] = useState(0);
+
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
+    const storedCart = localStorage.getItem("cartItems");
+    const session = localStorage.getItem("Data");
+
     if (storedTheme) {
       setTheme(storedTheme);
       document.body.classList.toggle("dark-mode", storedTheme === "dark");
     }
-    const collection1 = localStorage.getItem("cartItems");
-    if (collection1) {
-      setQuantity(JSON.parse(collection1));
+
+    if (storedCart) {
+      setCartQuantity(JSON.parse(storedCart).length || 0);
+    }
+
+    if (session) {
+      setSessionData(session);
     }
   }, []);
 
   useEffect(() => {
     localStorage.setItem("theme", theme);
     document.body.classList.toggle("dark-mode", theme === "dark");
-    const session = localStorage.getItem("Data");
-    setSessionData(session);
   }, [theme]);
-
-  useEffect(() => {}, []);
 
   const handleLogout = () => {
     localStorage.clear();
     setSessionData(null);
-    window.location.href = "/";
+    router.push("/");
   };
 
   const dropdownItems = [
@@ -78,11 +81,6 @@ function Navbars() {
         href: "/",
         title: "Products",
         description: "All the products we have to offer",
-      },
-      {
-        href: "#action4",
-        title: "About Us",
-        description: "Learn more about us",
       },
     ],
     [
@@ -112,7 +110,7 @@ function Navbars() {
               <DropdownContent items={dropdownItems} />
             </NavDropdown>
             <Nav.Link href="https://ecommerce-dasboard.vercel.app/">
-              Dasboard
+              Dashboard
             </Nav.Link>
           </Nav>
           <Form className="d-md-flex align-items-center gap-3">
@@ -124,12 +122,12 @@ function Navbars() {
                 size={24}
                 onClick={() => router.push("/usershopcollection")}
               />
-              {quantity.length > 0 && (
+              {cartQuantity > 0 && (
                 <span
-                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-white left-10"
+                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-white"
                   style={{ fontSize: "0.75rem", padding: "0.2em 0.6em" }}
                 >
-                  {quantity.length}
+                  {cartQuantity}
                 </span>
               )}
             </span>
@@ -138,7 +136,11 @@ function Navbars() {
                 setTheme((prev) => (prev === "light" ? "dark" : "light"))
               }
             >
-              {theme === "light" ? <MdLightMode /> : <FiMoon />}
+              {theme === "light" ? (
+                <MdLightMode size={24} />
+              ) : (
+                <FiMoon size={24} />
+              )}
             </Nav.Link>
             {!sessionData ? (
               <Link
