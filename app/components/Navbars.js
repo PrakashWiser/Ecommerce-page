@@ -78,15 +78,8 @@ function Navbars() {
   const dropdownItems = [
     [
       {
-        href: "/",
-        title: "Products",
-        description: "All the products we have to offer",
-      },
-    ],
-    [
-      {
         href: "/adminproductsdetails",
-        title: "Create Store",
+        title: "Admin products Details",
         description: "Start selling products",
       },
     ],
@@ -95,7 +88,7 @@ function Navbars() {
   return (
     <Navbar
       expand="lg"
-      className="bg-body-tertiary navbar sticky-top text_black"
+      className="bg-body-tertiary navbar fixed-top text_black"
     >
       <Container fluid>
         <Navbar.Brand className="fw600 d-flex gap-2" href="/">
@@ -106,15 +99,21 @@ function Navbars() {
         <Navbar.Collapse id="navbarScroll">
           <Nav className="me-auto my-2 my-lg-0" navbarScroll>
             <Nav.Link href="/">Home</Nav.Link>
-            <NavDropdown title="Categories" id="navbarScrollingDropdown">
-              <DropdownContent items={dropdownItems} />
-            </NavDropdown>
             <Nav.Link href="https://ecommerce-dasboard.vercel.app/">
               Dashboard
             </Nav.Link>
+            {sessionData && (
+              <NavDropdown
+                title="Admin Accessories"
+                id="navbarScrollingDropdown"
+                className="text-center"
+              >
+                <DropdownContent items={dropdownItems} />
+              </NavDropdown>
+            )}
           </Nav>
-          <Form className="d-md-flex align-items-center gap-3">
-            <Searchbar />
+          <Searchbar />
+          <Form className="d-flex align-items-center gap-3 my-3 my-md-0">
             <span className="position-relative">
               <FiShoppingCart
                 style={{ cursor: "pointer" }}
