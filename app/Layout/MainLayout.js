@@ -1,7 +1,12 @@
-import React from "react";
+import ToastMessage from "@/app/user/components/ToastMessage";
 
-function MainLayout({ styles, children }) {
-  return <section className={styles}>{children}</section>;
-}
+const MainLayout = ({ children }) => {
+  return (
+    <>
+      <ToastMessage /> 
+      {children}
+    </>
+  );
+};
 
 export default MainLayout;

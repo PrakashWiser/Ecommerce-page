@@ -2,15 +2,13 @@
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { showToast } from "@/app/user/components/ToastMessage";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Link from "next/link";
 
 const Signup = () => {
   const router = useRouter();
-
   const validationSchema = Yup.object().shape({
     num: Yup.string()
       .matches(/^\d+$/, "Must contain only numbers")
@@ -36,11 +34,11 @@ const Signup = () => {
         password,
       })
       .then(() => {
-        toast.success("Signup successful!");
+        showToast("Signup successful!", "success");
         resetForm();
         router.push("/");
       })
-      .catch(() => toast.error("Signup failed, please try again."));
+      .catch(() => showToast("Signup failed, please try again.", "error"));
   };
 
   return (
@@ -149,18 +147,13 @@ const Signup = () => {
         </Formik>
         <p className="text-center mt-3 small text-muted">
           Already have an account?{" "}
-          <Link href="/" className="text-decoration-none text-primary">
+          <Link
+            href="/user/signin"
+            className="text-decoration-none text-primary"
+          >
             Login here
           </Link>
         </p>
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          closeOnClick
-          pauseOnHover
-          draggable
-        />
       </div>
     </div>
   );

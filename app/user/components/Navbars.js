@@ -50,9 +50,7 @@ function Navbars() {
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
     const session = Cookies.get("Data");
-    if (cartLength) {
-      setCartQuantity(cartLength || 0);
-    }
+
     if (storedTheme) {
       setTheme(storedTheme);
       document.body.classList.toggle("dark-mode", storedTheme === "dark");
@@ -63,9 +61,12 @@ function Navbars() {
   }, []);
 
   useEffect(() => {
+    if (cartLength) {
+      setCartQuantity(cartLength || 0);
+    }
     localStorage.setItem("theme", theme);
     document.body.classList.toggle("dark-mode", theme === "dark");
-  }, [theme]);
+  }, [theme, cartLength]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -84,10 +85,7 @@ function Navbars() {
   ];
 
   return (
-    <Navbar
-      expand="lg"
-      className="bg-body-tertiary navbar  text_black"
-    >
+    <Navbar expand="lg" className="bg-body-tertiary navbar  text_black">
       <Container fluid>
         <Navbar.Brand className="fw600 d-flex gap-2" href="/">
           <TbSkateboard aria-label="Logo" />

@@ -7,39 +7,30 @@ import { TbSkateboard } from "react-icons/tb";
 import { GiConverseShoe, GiHeadphones } from "react-icons/gi";
 import { FaArrowRight, FaGithub } from "react-icons/fa";
 import { PiShoppingCart, PiTShirtDuotone } from "react-icons/pi";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "./user/components/Image";
+import Image from "next/image";
 import Navbars from "./user/components/Navbars";
 import Loader from "./user/components/Loader";
 import Embty from "../app/assets/images/embty-data.webp";
+import { useGlobalContext } from "./api/providers/GlobalContext";
+
 export default function Home() {
   const [APIData, setAPIData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [value, setValue] = useState("all");
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { data, loading } = useGlobalContext();
 
   const Giturl =
     "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
 
   useEffect(() => {
-    const GetData = async () => {
-      try {
-        const response = await axios.get(
-          `https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products`
-        );
-        setLoading(false);
-        setAPIData(response.data);
-      } catch (error) {
-        alert(error);
-      }
-    };
-
-    GetData();
-  }, []);
+    if (data) {
+      setAPIData(data);
+    }
+  }, [data]);
 
   useEffect(() => {
     if (value === "all") {
@@ -50,26 +41,72 @@ export default function Home() {
     }
   }, [value, APIData]);
 
+  const getCategoryCount = (categoryValue) => {
+    return APIData.filter((item) => item.listingType === categoryValue).length;
+  };
+
   const handleViewAll = () => {
     setShowAllProducts(true);
+  };
+
+  const handleProductClick = (id) => {
+    router.push(`/user/userproductsdetails/${id}`);
   };
 
   const displayedProducts = showAllProducts
     ? filteredData
     : filteredData.slice(0, 8);
 
-  const handleclcik = (id) => {
-    router.push(`/user/userproductsdetails/${id}`);
-  };
-  let LengthData = filteredData.length;
   if (loading) {
     return <Loader />;
   }
+
+  const CategoryCard = ({ icon, title, count, onClick }) => (
+    <Col xs={6} md={3}>
+      <div
+        className="shadow p-4 rounded text-center cursor-pointer"
+        onClick={onClick}
+        style={{ cursor: "pointer" }}
+      >
+        <div className="mb-3">{icon}</div>
+        <h4>{title}</h4>
+        <span>{count} products</span>
+      </div>
+    </Col>
+  );
+
+  const categories = [
+    {
+      icon: <TbSkateboard size={24} />,
+      title: "Skateboards",
+      value: "sketeboard",
+      count: getCategoryCount("sketeboard"), 
+    },
+    {
+      icon: <PiTShirtDuotone size={24} />,
+      title: "Clothing",
+      value: "clothing",
+      count: getCategoryCount("clothing"), 
+    },
+    {
+      icon: <GiConverseShoe size={24} />,
+      title: "Shoe",
+      value: "shoe",
+      count: getCategoryCount("shoe"), 
+    },
+    {
+      icon: <GiHeadphones size={24} />,
+      title: "Mobile",
+      value: "mobile",
+      count: getCategoryCount("mobile"), 
+    },
+  ];
+
   return (
     <>
       <section>
         <Navbars />
-        <div className="home_sec_one mb-5 postion-relative">
+        <div className="home_sec_one mb-5 position-relative">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 1440 320"
@@ -83,14 +120,15 @@ export default function Home() {
           </svg>
           <div className="ecommerce">
             <Container>
-              <Row className=" align-items-center">
+              <Row className="align-items-center">
                 <Col md={7}>
-                  <span className=" bg-white  fw600 p-1 rounded px-2 text_black">
-                    <span>
-                      <FaGithub />
-                    </span>
-                    <span className="ps-2 ">Start on Github</span>
-                  </span>
+                  <Link
+                    href="https://github.com/prakashwiser/Ecommerce-page"
+                    className="bg-white fw600 p-1 rounded px-2 text_black d-inline-flex align-items-center"
+                  >
+                    <FaGithub />
+                    <span className="ps-2">Start on Github</span>
+                  </Link>
                   <h1>
                     An open source e-commerce project built by{" "}
                     <span>inifarhan</span>
@@ -107,7 +145,7 @@ export default function Home() {
                       Buy Now
                     </Link>
                     <Link
-                      className="rounded-pill fw600  py-2 px-3 border boder-gray"
+                      className="rounded-pill fw600 py-2 px-3 border border-gray"
                       href="#"
                     >
                       Sell Now
@@ -116,9 +154,11 @@ export default function Home() {
                 </Col>
                 <Col md={5}>
                   <Image
-                    link={homebBanner}
-                    styles="img-fluid rounded-pill my-4 my-md-0"
+                    src={homebBanner}
                     alt="home-banner-img"
+                    className="img-fluid rounded-pill my-4 my-md-0"
+                    width={500}
+                    height={300}
                   />
                 </Col>
               </Row>
@@ -126,11 +166,12 @@ export default function Home() {
           </div>
         </div>
       </section>
+
       <section>
-        <div className="home_sec_two ">
+        <div className="home_sec_two">
           <Container>
             <h2 className="primary_color">Featured Categories</h2>
-            <ul className="d-lg-flex justify-content-between ">
+            <ul className="d-lg-flex justify-content-between">
               <li>
                 <p>
                   Find the best skateboarding gears from stores around the world
@@ -143,57 +184,27 @@ export default function Home() {
               </li>
             </ul>
             <Row>
-              <Col xs={6} md={3}>
-                <div
-                  className="shadow p-4 rounded"
-                  onClick={() => setValue("sketeboard")}
-                >
-                  <TbSkateboard />
-                  <h4>Skateboards</h4>
-                  <span>4 products</span>
-                </div>
-              </Col>
-              <Col xs={6} md={3}>
-                <div
-                  className="shadow p-4 rounded"
-                  onClick={() => setValue("clothing")}
-                >
-                  <PiTShirtDuotone />
-                  <h4>Clothing</h4>
-                  <span>9 products</span>
-                </div>
-              </Col>{" "}
-              <Col xs={6} md={3}>
-                <div
-                  className="shadow p-4 rounded"
-                  onClick={() => setValue("shoe")}
-                >
-                  <GiConverseShoe />
-                  <h4>Shoe</h4>
-                  <span>8 products</span>
-                </div>
-              </Col>{" "}
-              <Col xs={6} md={3}>
-                <div
-                  className="shadow p-4 rounded"
-                  onClick={() => setValue("mobile")}
-                >
-                  <GiHeadphones />
-                  <h4>mobile</h4>
-                  <span> 11 products</span>
-                </div>
-              </Col>
+              {categories.map((category, index) => (
+                <CategoryCard
+                  key={index}
+                  icon={category.icon}
+                  title={category.title}
+                  count={category.count} 
+                  onClick={() => setValue(category.value)}
+                />
+              ))}
             </Row>
           </Container>
         </div>
       </section>
+
       <section>
         <Container>
           <div className="home_sec_three my-5">
             <h2 className="primary_color">
-              Popular Products <span>({LengthData})</span>
+              Popular Products <span>({filteredData.length})</span>
             </h2>
-            <ul className="d-lg-flex justify-content-between ">
+            <ul className="d-lg-flex justify-content-between">
               <li>
                 <p>Explore all products we offer from around the world</p>
               </li>
@@ -203,67 +214,67 @@ export default function Home() {
                 </Link>
               </li>
             </ul>
-            <div>
-              <Row>
-                {displayedProducts.length > 0 ? (
-                  displayedProducts.map((items, index) => (
-                    <Col md={6} lg={3} key={index} className="mb-3">
-                      <Card
-                        className="shadow"
-                        onClick={() => handleclcik(items.id)}
-                        style={{
-                          height: "100%",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                          transition: "box-shadow 0.3s ease",
-                        }}
-                      >
-                        <Card.Img
-                          variant="top"
-                          src={Giturl + items.image}
-                          alt={items.name}
-                          className="img_details"
-                        />
-                        <Card.Body style={{ flexGrow: 1 }}>
-                          <Card.Title>{items.name}</Card.Title>
-                          <Card.Text
-                            style={{
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              display: "-webkit-box",
-                              WebkitBoxOrient: "vertical",
-                              WebkitLineClamp: 3,
-                            }}
-                          >
-                            {items.discription ? items.discription : ""}
-                          </Card.Text>
-                        </Card.Body>
-                        <Card.Footer
-                          className="border-0 d-flex justify-content-between align-items-center"
-                          style={{ backgroundColor: "#fff" }}
+            <Row>
+              {displayedProducts.length > 0 ? (
+                displayedProducts.map((item, index) => (
+                  <Col md={6} lg={3} key={index} className="mb-3">
+                    <Card
+                      className="shadow cursor-pointer"
+                      onClick={() => handleProductClick(item.id)}
+                      style={{
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        transition: "box-shadow 0.3s ease",
+                      }}
+                    >
+                      <Card.Img
+                        variant="top"
+                        src={Giturl + item.image}
+                        alt={item.name}
+                        className="img_details"
+                      />
+                      <Card.Body style={{ flexGrow: 1 }}>
+                        <Card.Title>{item.name}</Card.Title>
+                        <Card.Text
+                          style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 3,
+                          }}
                         >
-                          <small className="text-muted">{items.price}</small>
-                          <small>
-                            <PiShoppingCart />
-                          </small>
-                        </Card.Footer>
-                      </Card>
-                    </Col>
-                  ))
-                ) : (
-                  <div className="text-center w-100">
-                    <img
-                      src={Embty}
-                      alt="No Data"
-                      style={{ maxWidth: "300px", margin: "20px auto" }}
-                    />
-                    <p>No data available</p>
-                  </div>
-                )}
-              </Row>
-            </div>
-            {!showAllProducts && (
+                          {item.discription || ""}
+                        </Card.Text>
+                      </Card.Body>
+                      <Card.Footer
+                        className="border-0 d-flex justify-content-between align-items-center"
+                        style={{ backgroundColor: "#fff" }}
+                      >
+                        <small className="text-muted">{item.price}</small>
+                        <small>
+                          <PiShoppingCart />
+                        </small>
+                      </Card.Footer>
+                    </Card>
+                  </Col>
+                ))
+              ) : (
+                <div className="text-center w-100">
+                  <Image
+                    src={Embty}
+                    alt="No Data"
+                    width={300}
+                    height={200}
+                    style={{ margin: "20px auto" }}
+                  />
+                  <p>No data available</p>
+                </div>
+              )}
+            </Row>
+            {!showAllProducts && filteredData.length > 8 && (
               <div className="d-flex justify-content-center mt-4">
                 <button
                   className="rounded-pill bg_green py-2 px-3 text-white border-0"

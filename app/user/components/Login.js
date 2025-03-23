@@ -2,14 +2,14 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ImGithub } from "react-icons/im";
 import { useRouter } from "next/navigation";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Cookies from "js-cookie";
+import { showToast } from "@/app/user/components/ToastMessage";
+
 const Login = () => {
   const [apiData, setApiData] = useState([]);
   const router = useRouter();
@@ -20,7 +20,7 @@ const Login = () => {
       .then((response) => {
         setApiData(response.data);
       })
-      .catch(() => toast.error("Failed to fetch user data"));
+      .catch(() => showToast("Failed to fetch user data", "error"));
   }, []);
 
   const validationSchema = Yup.object().shape({
@@ -32,21 +32,27 @@ const Login = () => {
 
   const handleSubmit = (values) => {
     const { email, password } = values;
-
     const user = apiData.find((item) => item.email === email);
+
     if (!user) {
-      toast.error("Can't find your email, please register first");
+      showToast("Can't find your email, please register first", "error");
       router.push("/signupp");
     } else if (user.password !== password) {
-      toast.warning("Incorrect password, please try again");
+      showToast("Incorrect password, please try again", "warning");
     } else {
-      if (user.email === "prakashlunatic2@gmail.com") {
-        Cookies.set("Admin", user.email, { expires: 7 }); 
-        router.push("/admin/adminproductsdetails");
-      } else {
-        Cookies.set("Data", user.email, { expires: 7 });
-        router.push("/");
-      }
+      const successMessage = "Successfully Logged In";
+      const cookieName =
+        user.email === "prakashlunatic2@gmail.com" ? "Admin" : "Data";
+      const redirectPath =
+        user.email === "prakashlunatic2@gmail.com"
+          ? "/admin/adminproductsdetails"
+          : "/";
+
+      showToast(successMessage, "success");
+      setTimeout(() => {
+        Cookies.set(cookieName, user.email, { expires: 7 });
+        router.push(redirectPath);
+      }, 2000);
     }
   };
 
@@ -121,17 +127,6 @@ const Login = () => {
           </Form>
         )}
       </Formik>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
     </div>
   );
 };

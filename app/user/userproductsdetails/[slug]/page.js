@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import MainLayout from "@/app/Layout/MainLayout";
-import axios from "axios";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Navbars from "@/app/user/components/Navbars";
@@ -9,12 +8,22 @@ import Modal from "react-bootstrap/Modal";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import QrImg from "@/app/assets/images/qr-whatsapp.svg";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { cartActions } from "@/app/redux/cartSlice";
-import Toast, { showToast } from "@/app/lib/toastfy/page";
+import { useDispatch, useSelector } from "react-redux";
+import { cartActions } from "@/app/api/redux/cartSlice";
+import { showToast } from "@/app/user/components/ToastMessage";
 import Loader from "@/app/user/components/Loader";
 import Cookies from "js-cookie";
 import { FaShopify } from "react-icons/fa";
+import { useGlobalContext } from "@/app/api/providers/GlobalContext";
+import Image from "next/image";
+
+const cleanPrice = (price) => {
+  if (typeof price === "string") {
+    const numericPrice = price.replace(/[^0-9.]/g, "");
+    return parseFloat(numericPrice);
+  }
+  return price;
+};
 
 function Blog({ params }) {
   const { slug: value } = params;
@@ -22,7 +31,6 @@ function Blog({ params }) {
   const [APIData, setAPIData] = useState([]);
   const [filterData, setFilterData] = useState([]);
   const [cart, setCart] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
   const [data, setData] = useState([]);
   const router = useRouter();
   const [show, setShow] = useState(false);
@@ -30,23 +38,13 @@ function Blog({ params }) {
   const Giturl =
     "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
 
-  useEffect(() => {
-    const GetData = async () => {
-      try {
-        const response = await axios.get(
-          `https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products`
-        );
-        setAPIData(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    GetData();
+  const { cartItems, showCart } = useSelector((state) => state.cart);
+  const { data: globalData, loading: globalLoading } = useGlobalContext();
 
-    const savedCart = localStorage.getItem("cartItems");
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
+  useEffect(() => {
+    if (globalData) {
+      setAPIData(globalData);
+      setLoading(false);
     }
 
     const Datas = Cookies.get("Data");
@@ -55,38 +53,36 @@ function Blog({ params }) {
     } else {
       setData(Datas);
     }
-  }, [router]);
+  }, [globalData, router]);
 
   useEffect(() => {
     const filtered = APIData.filter((item) => item.id == value);
     setFilterData(filtered);
   }, [APIData, value]);
-
-  const handleShow = (selectedItem) => {
-    const existingItem = cartItems.find(
-      (cartItem) => cartItem.id === selectedItem.id
-    );
-    if (existingItem) {
-      showToast("You can view full details when the shop icon is clicked.");
-    } else {
-      const updatedCart = [...cartItems, selectedItem];
-      setCartItems(updatedCart);
-      localStorage.setItem("cartItems", JSON.stringify(updatedCart));
-      dispatch(cartActions.addCart(selectedItem));
-      showToast("Your order has been successfully added", "success");
+  const handleAddToCart = (selectedItem) => {
+    if (!selectedItem.price) {
+      showToast("Item price is missing!", "error");
+      return;
     }
-  };
 
-  const handleBuyNow = (item) => {
-    setShow(true);
-    const amount = item.price;
-    console.log(`Redirecting to payment gateway with amount: $${amount}`);
+    const price = cleanPrice(selectedItem.price);
+
+    const item = {
+      ...selectedItem,
+      price: price,
+    };
+
+    dispatch(cartActions.addCart(item));
+    showToast("Your order has been successfully added", "success");
   };
 
   const handleRemoveFromCart = (itemId) => {
-    const updatedCart = cartItems.filter((item) => item.id !== itemId);
-    setCartItems(updatedCart);
-    localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+    dispatch(cartActions.removeCart(itemId));
+    showToast("Item removed from cart!", "success");
+  };
+
+  const toggleCart = () => {
+    dispatch(cartActions.toggleCart());
   };
 
   const calculateTotal = () => {
@@ -95,10 +91,12 @@ function Blog({ params }) {
     }
 
     const total = cartItems.reduce((accumulator, item) => {
-      const numericPrice = item.price.replace(/[^0-9.]/g, "");
-      const price = parseFloat(numericPrice) || 0;
-      console.log(`Item: ${item.name}, Price: ${price}`);
-      return accumulator + price;
+      if (!item.price) {
+        return accumulator;
+      }
+
+      const price = cleanPrice(item.price);
+      return accumulator + price * item.quantity;
     }, 0);
 
     return total.toFixed(2);
@@ -106,13 +104,12 @@ function Blog({ params }) {
 
   const handleClose = () => setShow(false);
 
-  if (loading) {
+  if (loading || globalLoading) {
     return <Loader />;
   }
 
   return (
     <MainLayout>
-      <Toast />
       <Navbars />
       {data && (
         <Container>
@@ -128,22 +125,26 @@ function Blog({ params }) {
                 <React.Fragment key={item.id}>
                   <Col md={5}>
                     {item.id === "37" ? (
-                      <img
+                      <Image
                         src={`${Giturl}${item.image}`}
                         alt={item.name}
+                        width={500}
+                        height={500}
                         className="height_tybe"
                       />
                     ) : (
-                      <img
+                      <Image
                         src={`${Giturl}${item.image}`}
                         alt={item.name}
+                        width={500}
+                        height={500}
                         className="img-fluid"
                       />
                     )}
                   </Col>
                   <Col md={7}>
                     <h2>{item.name}</h2>
-                    <h5>Price: {item.price}</h5>
+                    <h5>Price: ₹{cleanPrice(item.price).toFixed(2)}</h5>
                     <p>Category: {item.listingType}</p>
                     <p>Description: {item.discription}</p>
                     {item.listingType === "sketeboard" && (
@@ -163,8 +164,9 @@ function Blog({ params }) {
                     <div className="d-flex justify-content-between justify-content-md-start my-3 align-items-center gap-3">
                       <Button
                         variant="primary"
-                        onClick={() => handleShow(item)}
+                        onClick={() => handleAddToCart(item)}
                         className="me-2 py-2"
+                        aria-label="Add to cart"
                       >
                         Add to cart
                       </Button>
@@ -173,19 +175,21 @@ function Blog({ params }) {
                         variant="warning"
                         className="py-2 px-3 text-white"
                         onClick={() => handleBuyNow(item)}
+                        aria-label="Buy now"
                       >
                         Buy Now
                       </Button>
                       <FaShopify
-                        onClick={() => setCart(true)}
+                        onClick={toggleCart}
                         className={`fs-1 ${
                           cartItems.length > 0 ? "zoom-animation" : ""
                         }`}
                         style={{ cursor: "pointer" }}
+                        aria-label="View cart"
                       />
                     </div>
 
-                    <Offcanvas show={cart} onHide={() => setCart(false)}>
+                    <Offcanvas show={showCart} onHide={toggleCart}>
                       <Offcanvas.Header closeButton>
                         <Offcanvas.Title>Order Products</Offcanvas.Title>
                       </Offcanvas.Header>
@@ -202,7 +206,7 @@ function Blog({ params }) {
                               </div>
                               <div className="d-flex align-items-center gap-3">
                                 <span className="fw-bold">
-                                  {cartItem.price}
+                                  ₹{cleanPrice(cartItem.totalPrice).toFixed(2)}
                                 </span>
                                 <button
                                   className="btn btn-sm btn-outline-danger"
@@ -220,7 +224,7 @@ function Blog({ params }) {
                           <p>Your cart is empty</p>
                         )}
                         <div className="d-flex justify-content-between">
-                          <h5>Total: ${calculateTotal()}</h5>
+                          <h5>Total: ₹{calculateTotal()}</h5>
                         </div>
                       </Offcanvas.Body>
                     </Offcanvas>
@@ -231,9 +235,15 @@ function Blog({ params }) {
           )}
           <Modal show={show} onHide={handleClose}>
             <div style={{ position: "relative" }}>
-              <img src={QrImg.src} className="w-100" alt="QR code" />
+              <Image
+                src={QrImg.src}
+                alt="QR code"
+                width={500}
+                height={500}
+                className="w-100"
+              />
               <RiDeleteBin5Line
-                onClick={() => setShow(false)}
+                onClick={handleClose}
                 style={{
                   position: "absolute",
                   top: "0px",
@@ -242,6 +252,7 @@ function Blog({ params }) {
                   fontSize: "1.5rem",
                   color: "red",
                 }}
+                aria-label="Close modal"
               />
             </div>
           </Modal>

@@ -5,12 +5,15 @@ import { Container, Row, Col, Button } from "react-bootstrap";
 import Navbars from "../components/Navbars";
 import { MdDelete } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
-import { cartActions } from "@/app/redux/cartSlice";
-import { showToast } from "@/app/lib/toastfy/page";
+import { cartActions } from "@/app/api/redux/cartSlice";
+import { showToast } from "@/app/user/components/ToastMessage";
 import Embty from "@/app/assets/images/embty-data.webp";
-import Image from "../components/Image";
+import Image from "next/image";
+
 function Shopcollection() {
   const collection = useSelector((state) => state.cart.cartItems);
+  console.log("Cart Items in Component:", collection); 
+
   const dispatch = useDispatch();
 
   const Giturl =
@@ -31,9 +34,11 @@ function Shopcollection() {
             collection.map((item, index) => (
               <React.Fragment key={index}>
                 <Col md={5}>
-                  <img
+                  <Image
                     src={Giturl + item.image}
                     alt={`${item.name}-${index}`}
+                    width={500}
+                    height={500}
                     className="shop_collection img-fluid mb-3"
                   />
                 </Col>
@@ -42,10 +47,10 @@ function Shopcollection() {
                     <strong>{item.name}</strong>
                   </div>
                   <ul>
-                    <li>Price: {item.price}</li>
+                    <li>Price: ₹{item.price.toFixed(2)}</li>
                     <li>Type: {item.listingType}</li>
                     <li>Quantity: {item.quantity}</li>
-                    <li>Total Price: {item.totalPrice}</li>
+                    <li>Total Price: ₹{item.totalPrice.toFixed(2)}</li>
                   </ul>
                   <Button variant="info">Buy Now</Button>
                 </Col>
@@ -62,10 +67,12 @@ function Shopcollection() {
           ) : (
             <div className="text-center w-100">
               <Image
-                link={Embty}
+                src={Embty}
+                alt="No data available"
+                width={300}
+                height={200}
                 style={{ maxWidth: "300px", margin: "20px auto" }}
-                alt="home-banner-img"
-                styles="rounded-pill"
+                className="rounded-pill"
               />
               <p>No data available</p>
             </div>
