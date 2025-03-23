@@ -15,7 +15,7 @@ import { FiShoppingCart, FiMoon } from "react-icons/fi";
 import { TbSkateboard } from "react-icons/tb";
 import { MdLightMode } from "react-icons/md";
 import Searchbar from "./Searchbar";
-
+import { useSelector } from "react-redux";
 const DropdownContent = memo(({ items }) => (
   <div className="d-md-flex">
     {items.map((section, index) => (
@@ -44,21 +44,18 @@ function Navbars() {
   const [theme, setTheme] = useState("light");
   const [sessionData, setSessionData] = useState(null);
   const [cartQuantity, setCartQuantity] = useState(0);
-
+  const cartLength = useSelector((state) => state.cart.cartItems.length);
+  console.log(cartQuantity);
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
-    const storedCart = localStorage.getItem("cartItems");
     const session = localStorage.getItem("Data");
-
+    if (cartLength) {
+      setCartQuantity(cartLength || 0);
+    }
     if (storedTheme) {
       setTheme(storedTheme);
       document.body.classList.toggle("dark-mode", storedTheme === "dark");
     }
-
-    if (storedCart) {
-      setCartQuantity(JSON.parse(storedCart).length || 0);
-    }
-
     if (session) {
       setSessionData(session);
     }
@@ -88,7 +85,7 @@ function Navbars() {
   return (
     <Navbar
       expand="lg"
-      className="bg-body-tertiary navbar fixed-top text_black"
+      className="bg-body-tertiary navbar sticky-top text_black"
     >
       <Container fluid>
         <Navbar.Brand className="fw600 d-flex gap-2" href="/">
@@ -106,14 +103,14 @@ function Navbars() {
               <NavDropdown
                 title="Admin Accessories"
                 id="navbarScrollingDropdown"
-                className="text-center"
+                className="text-lg-center"
               >
                 <DropdownContent items={dropdownItems} />
               </NavDropdown>
             )}
           </Nav>
+          <Form className="d-flex align-items-center gap-4 my-3 my-lg-0">
           <Searchbar />
-          <Form className="d-flex align-items-center gap-3 my-3 my-md-0">
             <span className="position-relative">
               <FiShoppingCart
                 style={{ cursor: "pointer" }}
@@ -121,7 +118,7 @@ function Navbars() {
                 size={24}
                 onClick={() => router.push("/usershopcollection")}
               />
-              {cartQuantity > 0 && (
+              {cartQuantity >= 0 && (
                 <span
                   className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-white"
                   style={{ fontSize: "0.75rem", padding: "0.2em 0.6em" }}

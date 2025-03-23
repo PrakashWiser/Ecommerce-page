@@ -9,9 +9,14 @@ import Modal from "react-bootstrap/Modal";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import QrImg from "../../assets/images/qr-whatsapp.svg";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { cartActions } from "@/app/redux/cartSlice";
+import Toast, { showToast } from "@/app/lib/toastfy/page";
+import Loader from "@/app/components/Loader";
+
 function Blog({ params }) {
   const { slug: value } = use(params);
-
+  const dispatch = useDispatch();
   const [APIData, setAPIData] = useState([]);
   const [filterData, setFilterData] = useState([]);
   const [cart, setCart] = useState(false);
@@ -19,6 +24,7 @@ function Blog({ params }) {
   const [data, setData] = useState([]);
   const router = useRouter();
   const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(true);
   const Giturl =
     "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
 
@@ -28,7 +34,9 @@ function Blog({ params }) {
         const response = await axios.get(
           `https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products`
         );
+
         setAPIData(response.data);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -52,16 +60,24 @@ function Blog({ params }) {
   }, [APIData, value]);
 
   const handleShow = (selectedItem) => {
-    setCart(true);
     const existingItem = cartItems.find(
       (cartItem) => cartItem.id === selectedItem.id
     );
+    try {
+      dispatch(cartActions.addCart(existingItem));
+      showToast("Your order has been successfully added", "success");
+    } catch (error) {
+      showToast(error);
+    }
+    console.log(existingItem);
     if (existingItem) {
-      alert("product already added");
+      setTimeout(() => {
+        setCart(true);
+      }, 1500);
     } else {
       const updatedCart = [...cartItems, selectedItem];
       setCartItems(updatedCart);
-      localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      console.log(updatedCart);
     }
   };
 
@@ -89,8 +105,12 @@ function Blog({ params }) {
     return total.toFixed(2);
   };
   const handleClose = () => setShow(false);
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <MainLayout>
+      <Toast />
       <Navbars />
       {data && (
         <Container>

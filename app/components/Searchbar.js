@@ -1,8 +1,7 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { ReactSearchAutocomplete } from "react-search-autocomplete";
 import axios from "axios";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 function Searchbar() {
@@ -10,18 +9,25 @@ function Searchbar() {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          "https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products"
-        );
-        setItems(response.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+    const cachedData = sessionStorage.getItem("searchItems");
 
-    fetchData();
+    if (cachedData) {
+      setItems(JSON.parse(cachedData));
+    } else {
+      const fetchData = async () => {
+        try {
+          const response = await axios.get(
+            "https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products"
+          );
+          setItems(response.data);
+          sessionStorage.setItem("searchItems", JSON.stringify(response.data));
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      };
+
+      fetchData();
+    }
   }, []);
 
   const handleOnSearch = (query, results) => {

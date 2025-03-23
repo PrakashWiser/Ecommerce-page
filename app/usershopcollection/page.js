@@ -1,29 +1,27 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import MainLayout from "../Layout/MainLayout";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import Navbars from "../components/Navbars";
 import { MdDelete } from "react-icons/md";
+import { useSelector, useDispatch } from "react-redux";
+import { cartActions } from "../redux/cartSlice";
+import { showToast } from "../lib/toastfy/page"; 
+
 function Shopcollection() {
-  const [collection, setCollection] = useState([]);
-  useEffect(() => {
-    const collection1 = localStorage.getItem("cartItems");
-    if (collection1) {
-      setCollection(JSON.parse(collection1));
-    }
-  }, []);
+  const collection = useSelector((state) => state.cart.cartItems);
+  const dispatch = useDispatch();
 
   const Giturl =
     "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
 
-  const handleClick = (id) => {
-    const updatedCollection = collection.filter((item) => item.id !== id);
-    setCollection(updatedCollection);
-    localStorage.setItem("cartItems", JSON.stringify(updatedCollection));
+  const handleRemoveFromCart = (id) => {
+    dispatch(cartActions.removeCart(id));
+    showToast("Item removed from cart!", "success")
   };
 
   return (
-    <MainLayout>
+    <MainLayout styles="mt_10">
       <Navbars />
       <h3 className="text-center my-5 text-decoration-underline">Your Items</h3>
       <Container>
@@ -45,6 +43,8 @@ function Shopcollection() {
                   <ul>
                     <li>Price: {item.price}</li>
                     <li>Type: {item.listingType}</li>
+                    <li>Quantity: {item.quantity}</li>
+                    <li>Total Price: {item.totalPrice}</li>
                   </ul>
                   <Button variant="info">Buy Now</Button>
                 </Col>
@@ -52,14 +52,14 @@ function Shopcollection() {
                   <MdDelete
                     style={{ cursor: "pointer" }}
                     className="text-danger fs-1"
-                    onClick={() => handleClick(item.id)}
+                    onClick={() => handleRemoveFromCart(item.id)}
                     title="Remove item"
                   />
                 </Col>
               </React.Fragment>
             ))
           ) : (
-            <div>No items in the collection.</div>
+            <div className="text-center">No items in the collection.</div>
           )}
         </Row>
       </Container>

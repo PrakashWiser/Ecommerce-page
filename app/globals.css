@@ -109,7 +109,9 @@ hr,
 .navbar-brand {
   color: #000 !important;
 }
-
+.mt_10{
+  margin-top: var(--sz30) !important;
+}
 .navbar button {
   background-color: var(--primary-color);
   color: white;

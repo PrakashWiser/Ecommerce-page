@@ -12,11 +12,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "./components/Image";
 import Navbars from "./components/Navbars";
+import Loader from "./components/Loader";
 export default function Home() {
   const [APIData, setAPIData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [value, setValue] = useState("all");
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const Giturl =
@@ -28,9 +30,10 @@ export default function Home() {
         const response = await axios.get(
           `https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products`
         );
+        setLoading(false);
         setAPIData(response.data);
       } catch (error) {
-       alert(error)
+        alert(error);
       }
     };
 
@@ -58,6 +61,9 @@ export default function Home() {
     router.push(`/userproductsdetails/${id}`);
   };
   let LengthData = filteredData.length;
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <>
       <section>
