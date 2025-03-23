@@ -10,9 +10,10 @@ import { PiShoppingCart, PiTShirtDuotone } from "react-icons/pi";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "./components/Image";
-import Navbars from "./components/Navbars";
-import Loader from "./components/Loader";
+import Image from "./user/components/Image";
+import Navbars from "./user/components/Navbars";
+import Loader from "./user/components/Loader";
+import Embty from "../app/assets/images/embty-data.webp";
 export default function Home() {
   const [APIData, setAPIData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -58,7 +59,7 @@ export default function Home() {
     : filteredData.slice(0, 8);
 
   const handleclcik = (id) => {
-    router.push(`/userproductsdetails/${id}`);
+    router.push(`/user/userproductsdetails/${id}`);
   };
   let LengthData = filteredData.length;
   if (loading) {
@@ -204,51 +205,62 @@ export default function Home() {
             </ul>
             <div>
               <Row>
-                {displayedProducts.map((items, index) => (
-                  <Col md={6} lg={3} key={index} className="mb-3">
-                    <Card
-                      className="shadow"
-                      onClick={() => handleclcik(items.id)}
-                      style={{
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        transition: "box-shadow 0.3s ease",
-                      }}
-                    >
-                      <Card.Img
-                        variant="top"
-                        src={Giturl + items.image}
-                        alt={items.name}
-                        className="img_details"
-                      />
-                      <Card.Body style={{ flexGrow: 1 }}>
-                        <Card.Title>{items.name}</Card.Title>
-                        <Card.Text
-                          style={{
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitBoxOrient: "vertical",
-                            WebkitLineClamp: 3,
-                          }}
-                        >
-                          {items.discription ? items.discription : ""}
-                        </Card.Text>
-                      </Card.Body>
-                      <Card.Footer
-                        className="border-0 d-flex justify-content-between align-items-center"
-                        style={{ backgroundColor: "#fff" }}
+                {displayedProducts.length > 0 ? (
+                  displayedProducts.map((items, index) => (
+                    <Col md={6} lg={3} key={index} className="mb-3">
+                      <Card
+                        className="shadow"
+                        onClick={() => handleclcik(items.id)}
+                        style={{
+                          height: "100%",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          transition: "box-shadow 0.3s ease",
+                        }}
                       >
-                        <small className="text-muted">{items.price}</small>
-                        <small>
-                          <PiShoppingCart />
-                        </small>
-                      </Card.Footer>
-                    </Card>
-                  </Col>
-                ))}
+                        <Card.Img
+                          variant="top"
+                          src={Giturl + items.image}
+                          alt={items.name}
+                          className="img_details"
+                        />
+                        <Card.Body style={{ flexGrow: 1 }}>
+                          <Card.Title>{items.name}</Card.Title>
+                          <Card.Text
+                            style={{
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              display: "-webkit-box",
+                              WebkitBoxOrient: "vertical",
+                              WebkitLineClamp: 3,
+                            }}
+                          >
+                            {items.discription ? items.discription : ""}
+                          </Card.Text>
+                        </Card.Body>
+                        <Card.Footer
+                          className="border-0 d-flex justify-content-between align-items-center"
+                          style={{ backgroundColor: "#fff" }}
+                        >
+                          <small className="text-muted">{items.price}</small>
+                          <small>
+                            <PiShoppingCart />
+                          </small>
+                        </Card.Footer>
+                      </Card>
+                    </Col>
+                  ))
+                ) : (
+                  <div className="text-center w-100">
+                    <img
+                      src={Embty}
+                      alt="No Data"
+                      style={{ maxWidth: "300px", margin: "20px auto" }}
+                    />
+                    <p>No data available</p>
+                  </div>
+                )}
               </Row>
             </div>
             {!showAllProducts && (

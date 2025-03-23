@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-
+import Cookies from "js-cookie";
 const Login = () => {
   const [apiData, setApiData] = useState([]);
   const router = useRouter();
@@ -41,10 +41,10 @@ const Login = () => {
       toast.warning("Incorrect password, please try again");
     } else {
       if (user.email === "prakashlunatic2@gmail.com") {
-        sessionStorage.setItem("Admin", user.email);
-        router.push("/adminproductsdetails");
+        Cookies.set("Admin", user.email, { expires: 7 }); 
+        router.push("/admin/adminproductsdetails");
       } else {
-        localStorage.setItem("Data", user.email);
+        Cookies.set("Data", user.email, { expires: 7 });
         router.push("/");
       }
     }
@@ -53,7 +53,11 @@ const Login = () => {
   return (
     <div className="container d-flex flex-column justify-content-center align-items-center vh-100">
       <div className="text-center">
-        <a href="https://github.com/prakashwiser/" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://github.com/prakashwiser/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <ImGithub className="fs-2 text-dark mb-3" />
         </a>
         <h1 className="fw-bold text-success mb-4">Sign in</h1>
@@ -107,7 +111,10 @@ const Login = () => {
               >
                 Sign in
               </button>
-              <Link href="/signupp" className="btn btn-outline-primary fw-bold shadow-sm px-4">
+              <Link
+                href="/signupp"
+                className="btn btn-outline-primary fw-bold shadow-sm px-4"
+              >
                 Create Account
               </Link>
             </div>

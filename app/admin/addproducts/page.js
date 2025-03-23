@@ -37,7 +37,7 @@ const AddProduct = () => {
     setImage("");
     setImageData("");
     setListingType("others");
-    router.push("/adminproductsdetails");
+    router.push("/admin/adminproductsdetails");
   };
 
   const handleImageChange = (e) => {

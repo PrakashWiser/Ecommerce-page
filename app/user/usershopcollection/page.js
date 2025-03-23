@@ -1,13 +1,14 @@
 "use client";
 import React from "react";
-import MainLayout from "../Layout/MainLayout";
+import MainLayout from "@/app/Layout/MainLayout";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import Navbars from "../components/Navbars";
 import { MdDelete } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
-import { cartActions } from "../redux/cartSlice";
-import { showToast } from "../lib/toastfy/page"; 
-
+import { cartActions } from "@/app/redux/cartSlice";
+import { showToast } from "@/app/lib/toastfy/page";
+import Embty from "@/app/assets/images/embty-data.webp";
+import Image from "../components/Image";
 function Shopcollection() {
   const collection = useSelector((state) => state.cart.cartItems);
   const dispatch = useDispatch();
@@ -17,11 +18,11 @@ function Shopcollection() {
 
   const handleRemoveFromCart = (id) => {
     dispatch(cartActions.removeCart(id));
-    showToast("Item removed from cart!", "success")
+    showToast("Item removed from cart!", "success");
   };
 
   return (
-    <MainLayout styles="mt_10">
+    <MainLayout>
       <Navbars />
       <h3 className="text-center my-5 text-decoration-underline">Your Items</h3>
       <Container>
@@ -59,7 +60,15 @@ function Shopcollection() {
               </React.Fragment>
             ))
           ) : (
-            <div className="text-center">No items in the collection.</div>
+            <div className="text-center w-100">
+              <Image
+                link={Embty}
+                style={{ maxWidth: "300px", margin: "20px auto" }}
+                alt="home-banner-img"
+                styles="rounded-pill"
+              />
+              <p>No data available</p>
+            </div>
           )}
         </Row>
       </Container>

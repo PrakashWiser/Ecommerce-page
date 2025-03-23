@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Container } from "react-bootstrap";
+import Cookies from "js-cookie";
 
 const UpdatePro = ({ params }) => {
   const { slug: value } = use(params);
@@ -30,7 +31,7 @@ const UpdatePro = ({ params }) => {
           setListingType(filter[0].listingType);
         }
       });
-    setAdmin(sessionStorage.getItem("Admin"));
+    setAdmin(Cookies.get("Admin"));
   }, []);
 
   const handleSubmit = (e) => {
@@ -54,7 +55,7 @@ const UpdatePro = ({ params }) => {
         setImage("");
         setListingType("others");
         setImageData(null);
-        router.push("/adminproductsdetails");
+        router.push("/admin/adminproductsdetails");
       })
       .catch((error) => {
         console.error("Error updating product:", error);
@@ -146,7 +147,7 @@ const UpdatePro = ({ params }) => {
             </label>
             <textarea
               className="form-control"
-              style={{resize:"none"}}
+              style={{ resize: "none" }}
               id="discription"
               rows={5}
               value={discription}

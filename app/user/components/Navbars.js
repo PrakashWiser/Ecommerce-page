@@ -16,6 +16,7 @@ import { TbSkateboard } from "react-icons/tb";
 import { MdLightMode } from "react-icons/md";
 import Searchbar from "./Searchbar";
 import { useSelector } from "react-redux";
+import Cookies from "js-cookie";
 const DropdownContent = memo(({ items }) => (
   <div className="d-md-flex">
     {items.map((section, index) => (
@@ -48,7 +49,7 @@ function Navbars() {
   console.log(cartQuantity);
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
-    const session = localStorage.getItem("Data");
+    const session = Cookies.get("Data");
     if (cartLength) {
       setCartQuantity(cartLength || 0);
     }
@@ -75,7 +76,7 @@ function Navbars() {
   const dropdownItems = [
     [
       {
-        href: "/adminproductsdetails",
+        href: "/admin/adminproductsdetails",
         title: "Admin products Details",
         description: "Start selling products",
       },
@@ -85,7 +86,7 @@ function Navbars() {
   return (
     <Navbar
       expand="lg"
-      className="bg-body-tertiary navbar sticky-top text_black"
+      className="bg-body-tertiary navbar  text_black"
     >
       <Container fluid>
         <Navbar.Brand className="fw600 d-flex gap-2" href="/">
@@ -110,13 +111,13 @@ function Navbars() {
             )}
           </Nav>
           <Form className="d-flex align-items-center gap-4 my-3 my-lg-0">
-          <Searchbar />
+            <Searchbar />
             <span className="position-relative">
               <FiShoppingCart
                 style={{ cursor: "pointer" }}
                 aria-label="Shopping Cart"
                 size={24}
-                onClick={() => router.push("/usershopcollection")}
+                onClick={() => router.push("/user/usershopcollection")}
               />
               {cartQuantity >= 0 && (
                 <span
@@ -140,7 +141,7 @@ function Navbars() {
             </Nav.Link>
             {!sessionData ? (
               <Link
-                href="./signin"
+                href="/user/signin"
                 className="btn rounded-pill bg_green text-white"
               >
                 Sign in

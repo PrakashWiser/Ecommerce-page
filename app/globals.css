@@ -109,7 +109,7 @@ hr,
 .navbar-brand {
   color: #000 !important;
 }
-.mt_10{
+.mt_10 {
   margin-top: var(--sz30) !important;
 }
 .navbar button {
@@ -196,13 +196,27 @@ hr,
   object-fit: cover;
   height: 245px;
 }
-.shop_collection{
+.shop_collection {
   width: 300px;
   height: 200px;
 }
-.height_tybe{
+.height_tybe {
   height: 480px;
 }
+.zoom-animation {
+  animation: zoomInOut 0.6s ease-in-out infinite;
+  color: #ff6347;
+}
+@keyframes zoomInOut {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
 @media (min-width: 1200px) {
   .home_sec_one h1 {
     width: 70%;
