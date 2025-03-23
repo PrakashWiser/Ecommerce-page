@@ -4,9 +4,11 @@ import axios from "axios";
 import Link from "next/link";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Table, Button, Container } from "react-bootstrap";
+import { showToast } from "@/app/user/components/ToastMessage";
+
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import Toast, { showToast } from "@/app/lib/toastfy/page";
+
 const Product = () => {
   const router = useRouter();
   const [APIData, setAPIData] = useState([]);
@@ -14,7 +16,7 @@ const Product = () => {
   useEffect(() => {
     const adminSession = Cookies.get("Admin");
     if (!adminSession) {
-      showToast("You have not verifed please login First..");
+      showToast("You have not verifed please login First..", "error");
       setTimeout(() => {
         router.push("/signin");
       }, 2000);

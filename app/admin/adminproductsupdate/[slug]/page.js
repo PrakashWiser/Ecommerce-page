@@ -5,7 +5,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Container } from "react-bootstrap";
-import Cookies from "js-cookie";
 
 const UpdatePro = ({ params }) => {
   const { slug: value } = use(params);
@@ -16,7 +15,6 @@ const UpdatePro = ({ params }) => {
   const [image, setImage] = useState("");
   const [listingType, setListingType] = useState("others");
   const [imageData, setImageData] = useState(null);
-  const [admin, setAdmin] = useState();
   useEffect(() => {
     axios
       .get(`https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products`)
@@ -31,7 +29,6 @@ const UpdatePro = ({ params }) => {
           setListingType(filter[0].listingType);
         }
       });
-    setAdmin(Cookies.get("Admin"));
   }, []);
 
   const handleSubmit = (e) => {
