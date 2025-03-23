@@ -51,7 +51,7 @@ function Blog({ params }) {
 
     const Datas = Cookies.get("Data");
     if (!Datas) {
-      router.push("/signin");
+      router.push("/user/signin");
     } else {
       setData(Datas);
     }
