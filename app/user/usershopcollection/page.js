@@ -7,12 +7,12 @@ import { MdDelete } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { cartActions } from "@/app/api/redux/cartSlice";
 import { showToast } from "@/app/user/components/ToastMessage";
-import Embty from "@/app/assets/images/embty-data.webp";
 import Image from "next/image";
+import Notfound from "@/app/assets/images/no-found.jpg";
 
 function Shopcollection() {
   const collection = useSelector((state) => state.cart.cartItems);
-  console.log("Cart Items in Component:", collection); 
+  console.log("Cart Items in Component:", collection);
 
   const dispatch = useDispatch();
 
@@ -27,7 +27,11 @@ function Shopcollection() {
   return (
     <MainLayout>
       <Navbars />
-      <h3 className="text-center my-5 text-decoration-underline">Your Items</h3>
+      {collection.length > 0 && (
+        <h3 className="text-center my-5 text-decoration-underline">
+          Your Items
+        </h3>
+      )}
       <Container>
         <Row className="align-items-center justify-content-center">
           {collection.length > 0 ? (
@@ -65,14 +69,12 @@ function Shopcollection() {
               </React.Fragment>
             ))
           ) : (
-            <div className="text-center w-100">
+            <div className="text-center  d-flex justify-content-center align-items-center flex-column">
               <Image
-                src={Embty}
+                src={Notfound}
                 alt="No data available"
-                width={300}
-                height={200}
-                style={{ maxWidth: "300px", margin: "20px auto" }}
-                className="rounded-pill"
+                className="rounded-pill img-fluid mx-auto"
+                style={{ maxWidth: "730px", margin: "20px 0" }}
               />
               <p>No data available</p>
             </div>

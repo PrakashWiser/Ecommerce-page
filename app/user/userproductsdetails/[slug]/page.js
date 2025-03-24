@@ -6,7 +6,6 @@ import Offcanvas from "react-bootstrap/Offcanvas";
 import Navbars from "@/app/user/components/Navbars";
 import Modal from "react-bootstrap/Modal";
 import { RiDeleteBin5Line } from "react-icons/ri";
-import QrImg from "@/app/assets/images/qr-whatsapp.svg";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { cartActions } from "@/app/api/redux/cartSlice";
@@ -16,7 +15,7 @@ import Cookies from "js-cookie";
 import { FaShopify } from "react-icons/fa";
 import { useGlobalContext } from "@/app/api/providers/GlobalContext";
 import Image from "next/image";
-
+import Notfound from "@/app/assets/images/no-found.jpg";
 const cleanPrice = (price) => {
   if (typeof price === "string") {
     const numericPrice = price.replace(/[^0-9.]/g, "");
@@ -102,7 +101,6 @@ function Blog({ params }) {
     return total.toFixed(2);
   };
 
-  const handleClose = () => setShow(false);
 
   if (loading || globalLoading) {
     return <Loader />;
@@ -116,7 +114,15 @@ function Blog({ params }) {
           {filterData.length === 0 ? (
             <Row className="vh-100 align-items-center justify-content-center">
               <Col className="text-center">
-                <h3 className="mt-3">No items found</h3>
+                <div className="text-center  d-flex justify-content-center align-items-center flex-column">
+                  <Image
+                    src={Notfound}
+                    alt="No data available"
+                    className="rounded-pill img-fluid mx-auto"
+                    style={{ maxWidth: "730px", margin: "20px 0" }}
+                  />
+                  <h3 className="mt-3">No items found</h3>
+                </div>
               </Col>
             </Row>
           ) : (
@@ -161,7 +167,7 @@ function Blog({ params }) {
                         <li>Weight Capacity: Can handle up to 75kg.</li>
                       </ul>
                     )}
-                    <div className="d-flex justify-content-between justify-content-md-start my-3 align-items-center gap-3">
+                    <div className="d-flex justify-content-between justify-content-md-start my-3 align-items-center gap-md-3">
                       <Button
                         variant="primary"
                         onClick={() => handleAddToCart(item)}
@@ -174,7 +180,6 @@ function Blog({ params }) {
                       <Button
                         variant="warning"
                         className="py-2 px-3 text-white"
-                        onClick={() => handleBuyNow(item)}
                         aria-label="Buy now"
                       >
                         Buy Now
@@ -182,7 +187,7 @@ function Blog({ params }) {
                       <FaShopify
                         onClick={toggleCart}
                         className={`fs-1 ${
-                          cartItems.length > 0 ? "zoom-animation" : ""
+                          cartItems.length > 0 ? "zoom-animation" : "primary_color"
                         }`}
                         style={{ cursor: "pointer" }}
                         aria-label="View cart"
@@ -233,29 +238,6 @@ function Blog({ params }) {
               ))}
             </Row>
           )}
-          <Modal show={show} onHide={handleClose}>
-            <div style={{ position: "relative" }}>
-              <Image
-                src={QrImg.src}
-                alt="QR code"
-                width={500}
-                height={500}
-                className="w-100"
-              />
-              <RiDeleteBin5Line
-                onClick={handleClose}
-                style={{
-                  position: "absolute",
-                  top: "0px",
-                  right: "0px",
-                  cursor: "pointer",
-                  fontSize: "1.5rem",
-                  color: "red",
-                }}
-                aria-label="Close modal"
-              />
-            </div>
-          </Modal>
         </Container>
       )}
     </MainLayout>

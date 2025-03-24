@@ -55,8 +55,11 @@ function Searchbar() {
   );
 
   return (
-    <div>
-      <div style={{ width: 350 }}>
+    <div className="text-center">
+      <div 
+        className="pb-3 pb-md-0"
+        style={{ width: "200px", minWidth: "300px" }}
+      >
         <ReactSearchAutocomplete
           items={items}
           onSearch={handleOnSearch}

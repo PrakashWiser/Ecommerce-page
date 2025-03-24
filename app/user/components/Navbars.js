@@ -108,7 +108,7 @@ function Navbars() {
               </NavDropdown>
             )}
           </Nav>
-          <Form className="d-flex align-items-center gap-4 my-3 my-lg-0">
+          <Form className="d-md-flex  align-items-center gap-4 my-3 my-lg-0">
             <Searchbar />
             <span className="position-relative">
               <FiShoppingCart
@@ -127,6 +127,7 @@ function Navbars() {
               )}
             </span>
             <Nav.Link
+            className="my-2 my-md-0"
               onClick={() =>
                 setTheme((prev) => (prev === "light" ? "dark" : "light"))
               }

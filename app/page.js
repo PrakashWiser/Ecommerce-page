@@ -14,6 +14,7 @@ import Navbars from "./user/components/Navbars";
 import Loader from "./user/components/Loader";
 import Embty from "../app/assets/images/embty-data.webp";
 import { useGlobalContext } from "./api/providers/GlobalContext";
+import { motion } from "framer-motion";
 
 export default function Home() {
   const [APIData, setAPIData] = useState([]);
@@ -39,6 +40,12 @@ export default function Home() {
       const filtered = APIData.filter((item) => item.listingType === value);
       setFilteredData(filtered);
     }
+
+    const interval = setInterval(() => {
+      setFilteredData((prevData) => [...prevData].reverse());
+    }, 9000);
+
+    return () => clearInterval(interval);
   }, [value, APIData]);
 
   const getCategoryCount = (categoryValue) => {
@@ -80,25 +87,25 @@ export default function Home() {
       icon: <TbSkateboard size={24} />,
       title: "Skateboards",
       value: "sketeboard",
-      count: getCategoryCount("sketeboard"), 
+      count: getCategoryCount("sketeboard"),
     },
     {
       icon: <PiTShirtDuotone size={24} />,
       title: "Clothing",
       value: "clothing",
-      count: getCategoryCount("clothing"), 
+      count: getCategoryCount("clothing"),
     },
     {
       icon: <GiConverseShoe size={24} />,
       title: "Shoe",
       value: "shoe",
-      count: getCategoryCount("shoe"), 
+      count: getCategoryCount("shoe"),
     },
     {
       icon: <GiHeadphones size={24} />,
       title: "Mobile",
       value: "mobile",
-      count: getCategoryCount("mobile"), 
+      count: getCategoryCount("mobile"),
     },
   ];
 
@@ -189,7 +196,7 @@ export default function Home() {
                   key={index}
                   icon={category.icon}
                   title={category.title}
-                  count={category.count} 
+                  count={category.count}
                   onClick={() => setValue(category.value)}
                 />
               ))}
@@ -218,51 +225,73 @@ export default function Home() {
               {displayedProducts.length > 0 ? (
                 displayedProducts.map((item, index) => (
                   <Col md={6} lg={3} key={index} className="mb-3">
-                    <Card
-                      className="shadow cursor-pointer"
-                      onClick={() => handleProductClick(item.id)}
-                      style={{
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        transition: "box-shadow 0.3s ease",
-                      }}
+                    <motion.div
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 10, ease: "easeInOut" }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      <Card.Img
-                        variant="top"
-                        src={Giturl + item.image}
-                        alt={item.name}
-                        className="img_details"
-                      />
-                      <Card.Body style={{ flexGrow: 1 }}>
-                        <Card.Title>{item.name}</Card.Title>
-                        <Card.Text
-                          style={{
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitBoxOrient: "vertical",
-                            WebkitLineClamp: 3,
-                          }}
-                        >
-                          {item.discription || ""}
-                        </Card.Text>
-                      </Card.Body>
-                      <Card.Footer
-                        className="border-0 d-flex justify-content-between align-items-center"
-                        style={{ backgroundColor: "#fff" }}
+                      <Card
+                        className="shadow cursor-pointer"
+                        onClick={() => handleProductClick(item.id)}
+                        style={{
+                          height: "100%",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          transition: "box-shadow 0.6s ease",
+                        }}
                       >
-                        <small className="text-muted">{item.price}</small>
-                        <small>
-                          <PiShoppingCart />
-                        </small>
-                      </Card.Footer>
-                    </Card>
+                        <Card.Img
+                          variant="top"
+                          src={Giturl + item.image}
+                          alt={item.name}
+                          className="img_details object-fill"
+                        />
+                        <Card.Body style={{ flexGrow: 1 }}>
+                          <Card.Title>{item.name}</Card.Title>
+                          <Card.Text
+                            style={{
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              display: "-webkit-box",
+                              WebkitBoxOrient: "vertical",
+                              WebkitLineClamp: 3,
+                            }}
+                          >
+                            {item.discription || ""}
+                          </Card.Text>
+                        </Card.Body>
+                        <Card.Footer
+                          className="border-0 d-flex justify-content-between align-items-center"
+                          style={{ backgroundColor: "#fff" }}
+                        >
+                          <small className="text-muted">{item.price}</small>
+                          <motion.span
+                            initial={{ scale: 1 }}
+                            animate={{ scale: 1.2 }}
+                            transition={{
+                              duration: 10,
+                              ease: "easeInOut",
+                              repeat: Infinity,
+                              repeatType: "reverse",
+                            }}
+                          >
+                            <PiShoppingCart />
+                          </motion.span>
+                        </Card.Footer>
+                      </Card>
+                    </motion.div>
                   </Col>
                 ))
               ) : (
-                <div className="text-center w-100">
+                <motion.div
+                  className="text-center w-100"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
                   <Image
                     src={Embty}
                     alt="No Data"
@@ -271,7 +300,7 @@ export default function Home() {
                     style={{ margin: "20px auto" }}
                   />
                   <p>No data available</p>
-                </div>
+                </motion.div>
               )}
             </Row>
             {!showAllProducts && filteredData.length > 8 && (
