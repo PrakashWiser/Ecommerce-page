@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, useEffect, useRef } from "react";
 import MainLayout from "@/app/Layout/MainLayout";
 import { Container, Row, Col, Button, Card, Spinner, Modal } from "react-bootstrap";
@@ -18,12 +17,10 @@ const Giturl = "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/re
 function ShopCollection() {
   const collection = useSelector((state) => state.cart.cartItems);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
   const dispatch = useDispatch();
   const userEmail = Cookies.get("Data") || "guest";
-  const paymentLinkRef = useRef(null);
 
-  // Initialize cart on component mount
   useEffect(() => {
     dispatch(cartActions.initializeCart({ email: userEmail }));
   }, [dispatch, userEmail]);
@@ -77,60 +74,11 @@ function ShopCollection() {
     }
   };
 
-  const initiateGPayPayment = () => {
-    const paymentDetails = {
-      recipient: '7339628276@okbizaxis',
-      amount: getTotalPrice().toFixed(2),
-      currency: 'INR',
-      note: `Payment for ${collection.length} items (Order: ${Date.now()})`
-    };
-
-    // Create hidden link if it doesn't exist
-    if (!paymentLinkRef.current) {
-      paymentLinkRef.current = document.createElement('a');
-      paymentLinkRef.current.style.display = 'none';
-      document.body.appendChild(paymentLinkRef.current);
-    }
-
-    // Try different UPI apps in sequence
-    const upiApps = [
-      {
-        name: 'GPay',
-        url: `upi://pay?pa=${paymentDetails.recipient}&pn=YourStore&am=${paymentDetails.amount}&cu=${paymentDetails.currency}&tn=${encodeURIComponent(paymentDetails.note)}`
-      },
-      {
-        name: 'PhonePe',
-        url: `tez://upi/pay?pa=${paymentDetails.recipient}&pn=YourStore&am=${paymentDetails.amount}&cu=${paymentDetails.currency}`
-      },
-      {
-        name: 'Paytm',
-        url: `paytmmp://upi/pay?pa=${paymentDetails.recipient}&pn=YourStore&am=${paymentDetails.amount}&cu=${paymentDetails.currency}`
-      }
-    ];
-
-    const tryPayment = (index = 0) => {
-      if (index >= upiApps.length) {
-        // Fallback to web UPI
-        window.open(`https://upayi.link/pay?pa=${paymentDetails.recipient}&pn=YourStore&am=${paymentDetails.amount}&tn=${encodeURIComponent(paymentDetails.note)}`, '_blank');
-        return;
-      }
-
-      paymentLinkRef.current.href = upiApps[index].url;
-      paymentLinkRef.current.click();
-      
-      setTimeout(() => {
-        tryPayment(index + 1);
-      }, 500);
-    };
-
-    tryPayment();
-  };
-
   const handleCheckout = async () => {
     setIsProcessing(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      setShowPaymentModal(true);
+      setShowOrderModal(true);
     } catch (error) {
       showToast("Checkout failed. Please try again.", "error");
     } finally {
@@ -138,20 +86,11 @@ function ShopCollection() {
     }
   };
 
-  const confirmPayment = () => {
-    initiateGPayPayment();
-    setShowPaymentModal(false);
+  const confirmOrder = () => {
+    setShowOrderModal(false);
     dispatch(cartActions.clearCart({ userEmail }));
+    showToast("Order placed successfully!", "success");
   };
-
-  // Clean up payment link on unmount
-  useEffect(() => {
-    return () => {
-      if (paymentLinkRef.current) {
-        document.body.removeChild(paymentLinkRef.current);
-      }
-    };
-  }, []);
 
   return (
     <MainLayout>
@@ -300,8 +239,7 @@ function ShopCollection() {
                         </>
                       ) : (
                         <>
-                          Pay with GPay
-                          <FaAmazonPay className="fs-3 ps-1" />
+                          Place Order
                         </>
                       )}
                     </Button>
@@ -331,36 +269,28 @@ function ShopCollection() {
         )}
 
         <Modal
-          show={showPaymentModal}
-          onHide={() => setShowPaymentModal(false)}
+          show={showOrderModal}
+          onHide={() => setShowOrderModal(false)}
           centered
         >
           <Modal.Header closeButton>
-            <Modal.Title>Confirm Payment</Modal.Title>
+            <Modal.Title>Order Confirmation</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <p>
-              You will be redirected to GPay to complete your payment of ₹
-              {getTotalPrice().toFixed(2)}
-            </p>
-            <div className="mt-3">
-              <p className="fw-bold">Payment Details:</p>
+            <p className="fw-bold mb-3">Your order has been placed successfully!</p>
+            <div className="mb-3">
+              <p>Order Summary:</p>
               <ul className="list-unstyled">
-                <li>Recipient: 7339628276@okbizaxis</li>
-                <li>Amount: ₹{getTotalPrice().toFixed(2)}</li>
-                <li>Items: {collection.length} products</li>
+                <li>Total Items: {collection.length}</li>
+                <li>Order Total: ₹{getTotalPrice().toFixed(2)}</li>
+                <li>Estimated Delivery: 3-5 business days</li>
               </ul>
             </div>
+            <p>Thank you for your purchase!</p>
           </Modal.Body>
           <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => setShowPaymentModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button variant="success" onClick={confirmPayment}>
-              Proceed to Payment
+            <Button variant="primary" onClick={confirmOrder}>
+              Continue Shopping
             </Button>
           </Modal.Footer>
         </Modal>
