@@ -1,42 +1,51 @@
 "use client";
-
-import React from "react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import Swal from 'sweetalert2';
 
 export const showToast = (message, type) => {
+  const Toast = Swal.mixin({
+    toast: true,
+    position: 'top',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer);
+      toast.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+  });
+
   switch (type) {
     case "success":
-      toast.success(message);
+      Toast.fire({
+        icon: 'success',
+        title: message
+      });
       break;
     case "error":
-      toast.error(message);
+      Toast.fire({
+        icon: 'error',
+        title: message
+      });
       break;
     case "info":
-      toast.info(message);
+      Toast.fire({
+        icon: 'info',
+        title: message
+      });
       break;
     case "warning":
-      toast.warn(message);
+      Toast.fire({
+        icon: 'warning',
+        title: message
+      });
       break;
     default:
-      toast(message);
+      Toast.fire({
+        icon: undefined,
+        title: message
+      });
   }
 };
-
-const ToastMessage = () => {
-  return (
-    <ToastContainer
-      position="top-right"
-      autoClose={3000}
-      hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-    />
-  );
-};
-
-export default ToastMessage;
+export default function ToastMessage() {
+  return null; 
+}

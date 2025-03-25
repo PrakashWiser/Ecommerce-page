@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import MainLayout from "@/app/Layout/MainLayout";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import Offcanvas from "react-bootstrap/Offcanvas";
@@ -25,14 +25,12 @@ const cleanPrice = (price) => {
 };
 
 function Blog({ params }) {
-  const { slug: value } = params;
+  const { slug: value } = use(params);
   const dispatch = useDispatch();
   const [APIData, setAPIData] = useState([]);
   const [filterData, setFilterData] = useState([]);
-  const [cart, setCart] = useState(false);
   const [data, setData] = useState([]);
   const router = useRouter();
-  const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(true);
   const Giturl =
     "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";

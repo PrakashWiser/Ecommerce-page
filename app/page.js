@@ -34,16 +34,25 @@ export default function Home() {
   }, [data]);
 
   useEffect(() => {
-    if (value === "all") {
-      setFilteredData(APIData);
-    } else {
-      const filtered = APIData.filter((item) => item.listingType === value);
-      setFilteredData(filtered);
-    }
+    const filterData = () => {
+      if (value === "all") {
+        setFilteredData(APIData);
+      } else {
+        const filtered = APIData.filter((item) => item.listingType === value);
+        setFilteredData(filtered);
+      }
+    };
+
+    filterData();
 
     const interval = setInterval(() => {
-      setFilteredData((prevData) => [...prevData].reverse());
-    }, 9000);
+      setFilteredData((prevData) => {
+        if (prevData.length > 0) {
+          return [...prevData].reverse();
+        }
+        return prevData;
+      });
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [value, APIData]);
@@ -221,75 +230,75 @@ export default function Home() {
                 </Link>
               </li>
             </ul>
-            <Row>
               {displayedProducts.length > 0 ? (
-                displayedProducts.map((item, index) => (
-                  <Col md={6} lg={3} key={index} className="mb-3">
-                    <motion.div
-                      initial={{ opacity: 0, y: 50 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 10, ease: "easeInOut" }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Card
-                        className="shadow cursor-pointer"
-                        onClick={() => handleProductClick(item.id)}
-                        style={{
-                          height: "100%",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                          transition: "box-shadow 0.6s ease",
-                        }}
+                <Row>
+                  {displayedProducts.map((item) => (
+                    <Col md={6} lg={3} key={item.id} className="mb-4 d-flex">
+                      <motion.div
+                        className="w-100"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.98 }}
                       >
-                        <Card.Img
-                          variant="top"
-                          src={Giturl + item.image}
-                          alt={item.name}
-                          className="img_details object-fill"
-                        />
-                        <Card.Body style={{ flexGrow: 1 }}>
-                          <Card.Title>{item.name}</Card.Title>
-                          <Card.Text
-                            style={{
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              display: "-webkit-box",
-                              WebkitBoxOrient: "vertical",
-                              WebkitLineClamp: 3,
-                            }}
-                          >
-                            {item.discription || ""}
-                          </Card.Text>
-                        </Card.Body>
-                        <Card.Footer
-                          className="border-0 d-flex justify-content-between align-items-center"
-                          style={{ backgroundColor: "#fff" }}
+                        <Card
+                          className="shadow h-100"
+                          onClick={() => handleProductClick(item.id)}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            cursor: "pointer",
+                          }}
                         >
-                          <small className="text-muted">{item.price}</small>
-                          <motion.span
-                            initial={{ scale: 1 }}
-                            animate={{ scale: 1.2 }}
-                            transition={{
-                              duration: 10,
-                              ease: "easeInOut",
-                              repeat: Infinity,
-                              repeatType: "reverse",
-                            }}
-                          >
-                            <PiShoppingCart />
-                          </motion.span>
-                        </Card.Footer>
-                      </Card>
-                    </motion.div>
-                  </Col>
-                ))
+                          <div style={{ height: "200px", overflow: "hidden" }}>
+                            <Card.Img
+                              variant="top"
+                              src={Giturl + item.image}
+                              alt={item.name}
+                              className="img_details w-100 h-100"
+                              style={{ objectFit: "cover" }}
+                            />
+                          </div>
+                          <Card.Body className="d-flex flex-column">
+                            <Card.Title className="flex-grow-0">
+                              {item.name}
+                            </Card.Title>
+                            <Card.Text
+                              className="flex-grow-1"
+                              style={{
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: "vertical",
+                              }}
+                            >
+                              {item.discription || ""}
+                            </Card.Text>
+                            <Card.Footer className="border-0 bg-white d-flex justify-content-between align-items-center p-0 pt-2">
+                              <small className="text-muted">
+                                ${item.price}
+                              </small>
+                              <motion.button
+                                className="border-0 bg-transparent p-0"
+                                whileHover={{ scale: 1.2 }}
+                                whileTap={{ scale: 0.9 }}
+                              >
+                                <PiShoppingCart size={20} />
+                              </motion.button>
+                            </Card.Footer>
+                          </Card.Body>
+                        </Card>
+                      </motion.div>
+                    </Col>
+                  ))}
+                </Row>
               ) : (
                 <motion.div
                   className="text-center w-100"
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
                 >
                   <Image
@@ -299,10 +308,9 @@ export default function Home() {
                     height={200}
                     style={{ margin: "20px auto" }}
                   />
-                  <p>No data available</p>
+                  <p>No products available</p>
                 </motion.div>
               )}
-            </Row>
             {!showAllProducts && filteredData.length > 8 && (
               <div className="d-flex justify-content-center mt-4">
                 <button
