@@ -36,7 +36,7 @@ const Login = () => {
 
     if (!user) {
       showToast("Can't find your email, please register first", "error");
-      router.push("/signupp");
+      router.push("/user/signupp");
     } else if (user.password !== password) {
       showToast("Incorrect password, please try again", "warning");
     } else {
@@ -118,7 +118,7 @@ const Login = () => {
                 Sign in
               </button>
               <Link
-                href="/signupp"
+                href="/user/signupp"
                 className="btn btn-outline-primary fw-bold shadow-sm px-4"
               >
                 Create Account

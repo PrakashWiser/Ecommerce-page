@@ -86,7 +86,7 @@ export default function Home() {
       >
         <div className="mb-3">{icon}</div>
         <h4>{title}</h4>
-        <span>{count} products</span>
+        <span>{count} Products</span>
       </div>
     </Col>
   );
