@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import MainLayout from "@/app/Layout/MainLayout";
-import { Container, Row, Col, Button, Card, Spinner } from "react-bootstrap";
+import { Container, Row, Col, Button, Card, Spinner, Modal } from "react-bootstrap";
 import Navbars from "../components/Navbars";
 import { MdDelete } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
@@ -18,29 +18,43 @@ const Giturl = "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/re
 function ShopCollection() {
   const collection = useSelector((state) => state.cart.cartItems);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const dispatch = useDispatch();
-  const userEmail = Cookies.get("Data") || 'guest';
+  const userEmail = Cookies.get("Data") || "guest";
+  const paymentLinkRef = useRef(null);
+
+  // Initialize cart on component mount
+  useEffect(() => {
+    dispatch(cartActions.initializeCart({ email: userEmail }));
+  }, [dispatch, userEmail]);
 
   const getTotalPrice = () => {
-    return collection.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    return collection.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0
+    );
   };
 
   const handleRemoveFromCart = (id) => {
-    dispatch(cartActions.removeCart({
-      itemId: id,
-      userEmail: userEmail
-    }));
+    dispatch(
+      cartActions.removeCart({
+        itemId: id,
+        userEmail: userEmail,
+      })
+    );
     showToast("Item removed from cart!", "success");
   };
 
   const handleIncrement = (id) => {
     const item = collection.find((item) => item.id === id);
     if (item) {
-      dispatch(cartActions.updateQuantity({
-        id: item.id,
-        newQuantity: item.quantity + 1,
-        userEmail: userEmail
-      }));
+      dispatch(
+        cartActions.updateQuantity({
+          id: item.id,
+          newQuantity: item.quantity + 1,
+          userEmail: userEmail,
+        })
+      );
       showToast("Quantity increased!", "success");
     }
   };
@@ -49,11 +63,13 @@ function ShopCollection() {
     const item = collection.find((item) => item.id === id);
     if (item) {
       if (item.quantity > 1) {
-        dispatch(cartActions.updateQuantity({
-          id: item.id,
-          newQuantity: item.quantity - 1,
-          userEmail: userEmail
-        }));
+        dispatch(
+          cartActions.updateQuantity({
+            id: item.id,
+            newQuantity: item.quantity - 1,
+            userEmail: userEmail,
+          })
+        );
         showToast("Quantity decreased!", "success");
       } else {
         handleRemoveFromCart(id);
@@ -61,18 +77,81 @@ function ShopCollection() {
     }
   };
 
+  const initiateGPayPayment = () => {
+    const paymentDetails = {
+      recipient: '7339628276@okbizaxis',
+      amount: getTotalPrice().toFixed(2),
+      currency: 'INR',
+      note: `Payment for ${collection.length} items (Order: ${Date.now()})`
+    };
+
+    // Create hidden link if it doesn't exist
+    if (!paymentLinkRef.current) {
+      paymentLinkRef.current = document.createElement('a');
+      paymentLinkRef.current.style.display = 'none';
+      document.body.appendChild(paymentLinkRef.current);
+    }
+
+    // Try different UPI apps in sequence
+    const upiApps = [
+      {
+        name: 'GPay',
+        url: `upi://pay?pa=${paymentDetails.recipient}&pn=YourStore&am=${paymentDetails.amount}&cu=${paymentDetails.currency}&tn=${encodeURIComponent(paymentDetails.note)}`
+      },
+      {
+        name: 'PhonePe',
+        url: `tez://upi/pay?pa=${paymentDetails.recipient}&pn=YourStore&am=${paymentDetails.amount}&cu=${paymentDetails.currency}`
+      },
+      {
+        name: 'Paytm',
+        url: `paytmmp://upi/pay?pa=${paymentDetails.recipient}&pn=YourStore&am=${paymentDetails.amount}&cu=${paymentDetails.currency}`
+      }
+    ];
+
+    const tryPayment = (index = 0) => {
+      if (index >= upiApps.length) {
+        // Fallback to web UPI
+        window.open(`https://upayi.link/pay?pa=${paymentDetails.recipient}&pn=YourStore&am=${paymentDetails.amount}&tn=${encodeURIComponent(paymentDetails.note)}`, '_blank');
+        return;
+      }
+
+      paymentLinkRef.current.href = upiApps[index].url;
+      paymentLinkRef.current.click();
+      
+      setTimeout(() => {
+        tryPayment(index + 1);
+      }, 500);
+    };
+
+    tryPayment();
+  };
+
   const handleCheckout = async () => {
     setIsProcessing(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      showToast("Order placed successfully!", "success");
-      dispatch(cartActions.clearCart({ userEmail }));
+      setShowPaymentModal(true);
     } catch (error) {
       showToast("Checkout failed. Please try again.", "error");
     } finally {
       setIsProcessing(false);
     }
   };
+
+  const confirmPayment = () => {
+    initiateGPayPayment();
+    setShowPaymentModal(false);
+    dispatch(cartActions.clearCart({ userEmail }));
+  };
+
+  // Clean up payment link on unmount
+  useEffect(() => {
+    return () => {
+      if (paymentLinkRef.current) {
+        document.body.removeChild(paymentLinkRef.current);
+      }
+    };
+  }, []);
 
   return (
     <MainLayout>
@@ -94,7 +173,10 @@ function ShopCollection() {
                     <Card.Body>
                       <Row className="align-items-center">
                         <Col md={3} xs={4}>
-                          <div className="position-relative" style={{ height: "120px" }}>
+                          <div
+                            className="position-relative"
+                            style={{ height: "120px" }}
+                          >
                             <Image
                               src={`${Giturl}${item.image}`}
                               alt={item.name}
@@ -132,6 +214,7 @@ function ShopCollection() {
                               className="px-3"
                               onClick={() => handleDecrement(item.id)}
                               aria-label="Decrease quantity"
+                              disabled={item.quantity <= 1}
                             >
                               <FaMinus />
                             </Button>
@@ -173,7 +256,14 @@ function ShopCollection() {
                       Order Summary
                     </Card.Title>
                     <div className="d-flex justify-content-between mb-2">
-                      <span>Subtotal ({collection.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
+                      <span>
+                        Subtotal (
+                        {collection.reduce(
+                          (sum, item) => sum + item.quantity,
+                          0
+                        )}{" "}
+                        items)
+                      </span>
                       <span>₹{getTotalPrice().toFixed(2)}</span>
                     </div>
                     <div className="d-flex justify-content-between mb-2">
@@ -194,7 +284,7 @@ function ShopCollection() {
                       size="lg"
                       className="w-100 mt-3 flash-hover-btn white-btn"
                       onClick={handleCheckout}
-                      disabled={isProcessing}
+                      disabled={isProcessing || collection.length === 0}
                     >
                       {isProcessing ? (
                         <>
@@ -210,7 +300,7 @@ function ShopCollection() {
                         </>
                       ) : (
                         <>
-                          Proceed to Checkout
+                          Pay with GPay
                           <FaAmazonPay className="fs-3 ps-1" />
                         </>
                       )}
@@ -239,6 +329,41 @@ function ShopCollection() {
             </Button>
           </div>
         )}
+
+        <Modal
+          show={showPaymentModal}
+          onHide={() => setShowPaymentModal(false)}
+          centered
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Payment</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>
+              You will be redirected to GPay to complete your payment of ₹
+              {getTotalPrice().toFixed(2)}
+            </p>
+            <div className="mt-3">
+              <p className="fw-bold">Payment Details:</p>
+              <ul className="list-unstyled">
+                <li>Recipient: 7339628276@okbizaxis</li>
+                <li>Amount: ₹{getTotalPrice().toFixed(2)}</li>
+                <li>Items: {collection.length} products</li>
+              </ul>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => setShowPaymentModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="success" onClick={confirmPayment}>
+              Proceed to Payment
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
     </MainLayout>
   );

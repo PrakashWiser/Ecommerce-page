@@ -1,78 +1,67 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const getCartKey = (email) => {
-  return email ? `cart_${email}` : 'cart_guest';
+const getCartKey = (email) => (email ? `cart_${email}` : "cart_guest");
+
+const initialState = {
+  cartItems: [],
+  showCart: false,
+  totalQuantity: 0,
+  currentUserEmail: null,
 };
 
 const loadCart = (email) => {
-  if (typeof window === "undefined") {
-    return {
-      cartItems: [],
-      showCart: false,
-      totalQuantity: 0,
-    };
-  }
-
+  if (typeof window === "undefined") return initialState;
   const key = getCartKey(email);
   const savedCart = localStorage.getItem(key);
-  return savedCart
-    ? JSON.parse(savedCart)
-    : {
-        cartItems: [],
-        showCart: false,
-        totalQuantity: 0,
-      };
+  return savedCart ? JSON.parse(savedCart) : initialState;
 };
 
-const saveCart = (cart, email) => {
-  if (typeof window !== "undefined") {
-    const key = getCartKey(email);
-    localStorage.setItem(key, JSON.stringify(cart));
-  }
-};
-
-const initialState = loadCart(null);
 const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
+    initializeCart(state, action) {
+      const { email } = action.payload;
+      const loadedCart = loadCart(email);
+      return {
+        ...loadedCart,
+        currentUserEmail: email,
+        showCart: state.showCart, 
+      };
+    },
     addCart(state, action) {
-      const { newItem, userEmail } = action.payload;
+      const { newItem } = action.payload;
       const existingItem = state.cartItems.find(
         (item) => item.id === newItem.id
       );
 
       if (existingItem) {
-        existingItem.quantity += 1;
+        existingItem.quantity += newItem.quantity || 1;
         existingItem.totalPrice = parseFloat(
-          (existingItem.totalPrice + newItem.price).toFixed(2)
+          (existingItem.price * existingItem.quantity).toFixed(2)
         );
       } else {
         state.cartItems.push({
-          id: newItem.id,
-          name: newItem.name,
-          price: newItem.price,
-          listingType: newItem.listingType,
-          quantity: 1,
-          totalPrice: newItem.price,
-          image: newItem.image,
+          ...newItem,
+          quantity: newItem.quantity || 1,
+          totalPrice: parseFloat(
+            (newItem.price * (newItem.quantity || 1)).toFixed(2)
+          ),
         });
       }
-      state.totalQuantity += 1;
-      saveCart(state, userEmail);
+      state.totalQuantity += newItem.quantity || 1;
     },
     removeCart(state, action) {
-      const { itemId, userEmail } = action.payload;
+      const { itemId } = action.payload;
       const existingItem = state.cartItems.find((item) => item.id === itemId);
 
       if (existingItem) {
         state.totalQuantity -= existingItem.quantity;
         state.cartItems = state.cartItems.filter((item) => item.id !== itemId);
-        saveCart(state, userEmail);
       }
     },
     updateQuantity(state, action) {
-      const { id, newQuantity, userEmail } = action.payload;
+      const { id, newQuantity } = action.payload;
       const existingItem = state.cartItems.find((item) => item.id === id);
 
       if (existingItem) {
@@ -82,38 +71,38 @@ const cartSlice = createSlice({
           (existingItem.price * newQuantity).toFixed(2)
         );
         state.totalQuantity += quantityDifference;
-        saveCart(state, userEmail);
       }
     },
     toggleCart(state) {
       state.showCart = !state.showCart;
     },
-    clearCart(state, action) {
-      const { userEmail } = action.payload;
+    clearCart(state) {
       state.cartItems = [];
       state.totalQuantity = 0;
-      saveCart(state, userEmail);
     },
-    updateCartFromStorage(state, action) {
-      return action.payload;
-    },
-    loadUserCart(state, action) {
-      const { email } = action.payload;
-      return loadCart(email);
+    saveCart(state) {
+      if (state.currentUserEmail && typeof window !== "undefined") {
+        localStorage.setItem(
+          getCartKey(state.currentUserEmail),
+          JSON.stringify({
+            cartItems: state.cartItems,
+            totalQuantity: state.totalQuantity,
+            showCart: state.showCart,
+          })
+        );
+      }
     },
   },
 });
 
-export const setupCartSync = (store) => {
-  if (typeof window !== "undefined") {
-    window.addEventListener("storage", (event) => {
-      if (event.key.startsWith("cart_")) {
-        const newCart = JSON.parse(event.newValue);
-        store.dispatch(cartActions.updateCartFromStorage(newCart));
-      }
-    });
+const cartMiddleware = (store) => (next) => (action) => {
+  const result = next(action);
+  if (action.type.startsWith("cart/") && !action.type.endsWith("saveCart")) {
+    store.dispatch(cartActions.saveCart());
   }
+  return result;
 };
 
+export { cartMiddleware };
 export const cartActions = cartSlice.actions;
 export default cartSlice.reducer;

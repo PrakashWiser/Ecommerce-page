@@ -23,8 +23,9 @@ const cleanPrice = (price) => {
   }
   return price;
 };
-const Giturl =
-"https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
+
+const Giturl = "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
+
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params?.slug;
@@ -37,6 +38,7 @@ export default function ProductDetailPage() {
   const { cartItems, showCart } = useSelector((state) => state.cart);
   const { data: globalData, loading: globalLoading } = useGlobalContext();
 
+  // Load product and user data
   useEffect(() => {
     if (!productId) {
       setLoading(false);
@@ -54,6 +56,12 @@ export default function ProductDetailPage() {
       router.push("/user/signin");
     }
   }, [globalData, router, productId]);
+
+  // Initialize cart on component mount
+  useEffect(() => {
+    const userEmail = Cookies.get("Data") || "guest";
+    dispatch(cartActions.initializeCart({ email: userEmail }));
+  }, [dispatch]);
 
   const handleAddToCart = () => {
     if (!product?.price) {
@@ -130,15 +138,9 @@ export default function ProductDetailPage() {
               />
               <h3 className="mt-4">Product Not Found</h3>
               <p className="text-muted mb-4">
-                The product you're looking for doesn't exist or has been
-                removed.
+                The product you're looking for doesn't exist or has been removed.
               </p>
-              <Button
-                variant="primary"
-                as={Link}
-                href="/"
-                className="px-4 py-2"
-              >
+              <Button variant="primary" as={Link} href="/" className="px-4 py-2">
                 Continue Shopping
               </Button>
             </Col>
@@ -153,6 +155,7 @@ export default function ProductDetailPage() {
       <Navbars />
       <Container className="my-4 my-md-5">
         <Row className="g-4">
+          {/* Product Image Column */}
           <Col md={6}>
             <div className="bg-light rounded-4 p-3 p-md-4 shadow-sm h-100">
               <div className="ratio ratio-1x1 position-relative">
@@ -167,22 +170,26 @@ export default function ProductDetailPage() {
               </div>
             </div>
           </Col>
+
+          {/* Product Details Column */}
           <Col md={6}>
             <div className="d-flex flex-column h-100">
               <Badge bg="secondary" className="align-self-start mb-3">
                 {product.listingType}
               </Badge>
+              
               <h1 className="mb-3 fw-bold">{product.name}</h1>
+              
               <div className="d-flex align-items-center mb-4">
-                <h2 className="text-primary mb-0">
-                  ₹{cleanPrice(product.price).toFixed(2)}
-                </h2>
+                <h2 className="text-primary mb-0">₹{cleanPrice(product.price).toFixed(2)}</h2>
                 {product.originalPrice && (
                   <del className="text-muted ms-3 fs-5">
                     ₹{cleanPrice(product.originalPrice).toFixed(2)}
                   </del>
                 )}
               </div>
+
+              {/* Quantity Selector */}
               <div className="d-flex align-items-center mb-4">
                 <span className="me-3 fw-medium">Quantity:</span>
                 <Button
@@ -202,6 +209,8 @@ export default function ProductDetailPage() {
                   <FaPlus />
                 </Button>
               </div>
+
+              {/* Action Buttons */}
               <div className="d-flex flex-wrap gap-3 mb-4">
                 <Button
                   variant="primary"
@@ -211,7 +220,7 @@ export default function ProductDetailPage() {
                 >
                   Add to Cart
                 </Button>
-
+                
                 <Button
                   variant="warning"
                   className="text-white flex-grow-1 py-3"
@@ -220,7 +229,7 @@ export default function ProductDetailPage() {
                 >
                   Buy Now
                 </Button>
-
+                
                 <Button
                   variant="outline-primary"
                   className="position-relative p-3"
@@ -230,10 +239,7 @@ export default function ProductDetailPage() {
                   <FaShopify size={20} />
                   {cartItems.length > 0 && (
                     <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                      {cartItems.reduce(
-                        (total, item) => total + item.quantity,
-                        0
-                      )}
+                      {cartItems.reduce((total, item) => total + item.quantity, 0)}
                     </span>
                   )}
                 </Button>
@@ -247,12 +253,10 @@ export default function ProductDetailPage() {
                   <h5 className="mb-3">Features</h5>
                   <ul className="list-unstyled">
                     <li className="mb-2">
-                      <strong>Deck:</strong> 26 x 6.5, made of fiber for smooth
-                      rides
+                      <strong>Deck:</strong> 26 x 6.5, made of fiber for smooth rides
                     </li>
                     <li className="mb-2">
-                      <strong>Bearings & Wheels:</strong> High-precision ball
-                      bearings, PVC wheels
+                      <strong>Bearings & Wheels:</strong> High-precision ball bearings, PVC wheels
                     </li>
                     <li className="mb-2">
                       <strong>Design:</strong> Unique graphics for style
@@ -266,11 +270,11 @@ export default function ProductDetailPage() {
             </div>
           </Col>
         </Row>
+
         <Offcanvas show={showCart} onHide={toggleCart} placement="end">
           <Offcanvas.Header closeButton className="border-bottom">
             <Offcanvas.Title className="fw-bold">
-              Your Shopping Cart (
-              {cartItems.reduce((total, item) => total + item.quantity, 0)})
+              Your Shopping Cart ({cartItems.reduce((total, item) => total + item.quantity, 0)})
             </Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body className="d-flex flex-column">
@@ -337,13 +341,13 @@ export default function ProductDetailPage() {
                     <span>Total:</span>
                     <span>₹{calculateTotal()}</span>
                   </div>
-
+                  
                   <Button
                     variant="success"
                     size="lg"
                     className="w-100 py-3 fw-bold text-white"
                     as={Link}
-                    href="/checkout"
+                    href="/user/usershopcollection"
                   >
                     Proceed to Checkout
                   </Button>
