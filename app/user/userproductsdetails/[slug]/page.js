@@ -1,245 +1,358 @@
 "use client";
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "@/app/Layout/MainLayout";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col, Button, Badge, Spinner } from "react-bootstrap";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Navbars from "@/app/user/components/Navbars";
-import Modal from "react-bootstrap/Modal";
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { cartActions } from "@/app/api/redux/cartSlice";
 import { showToast } from "@/app/user/components/ToastMessage";
 import Loader from "@/app/user/components/Loader";
 import Cookies from "js-cookie";
-import { FaShopify } from "react-icons/fa";
+import { FaShopify, FaPlus, FaMinus } from "react-icons/fa";
 import { useGlobalContext } from "@/app/api/providers/GlobalContext";
 import Image from "next/image";
 import Notfound from "@/app/assets/images/no-found.jpg";
+import Link from "next/link";
+
 const cleanPrice = (price) => {
   if (typeof price === "string") {
-    const numericPrice = price.replace(/[^0-9.]/g, "");
-    return parseFloat(numericPrice);
+    return parseFloat(price.replace(/[^0-9.]/g, ""));
   }
   return price;
 };
-
-function Blog({ params }) {
-  const { slug: value } = use(params);
+const Giturl =
+"https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
+export default function ProductDetailPage() {
+  const params = useParams();
+  const productId = params?.slug;
   const dispatch = useDispatch();
-  const [APIData, setAPIData] = useState([]);
-  const [filterData, setFilterData] = useState([]);
-  const [data, setData] = useState([]);
+  const [product, setProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const Giturl =
-    "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
 
   const { cartItems, showCart } = useSelector((state) => state.cart);
   const { data: globalData, loading: globalLoading } = useGlobalContext();
 
   useEffect(() => {
+    if (!productId) {
+      setLoading(false);
+      return;
+    }
+
     if (globalData) {
-      setAPIData(globalData);
+      const foundProduct = globalData.find((item) => item.id == productId);
+      setProduct(foundProduct);
       setLoading(false);
     }
 
-    const Datas = Cookies.get("Data");
-    if (!Datas) {
+    const userData = Cookies.get("Data");
+    if (!userData) {
       router.push("/user/signin");
-    } else {
-      setData(Datas);
     }
-  }, [globalData, router]);
+  }, [globalData, router, productId]);
 
-  useEffect(() => {
-    const filtered = APIData.filter((item) => item.id == value);
-    setFilterData(filtered);
-  }, [APIData, value]);
-  const handleAddToCart = (selectedItem) => {
-    if (!selectedItem.price) {
+  const handleAddToCart = () => {
+    if (!product?.price) {
       showToast("Item price is missing!", "error");
       return;
     }
 
-    const price = cleanPrice(selectedItem.price);
-
+    const userEmail = Cookies.get("Data") || "guest";
+    const price = cleanPrice(product.price);
     const item = {
-      ...selectedItem,
+      ...product,
       price: price,
+      quantity: quantity,
+      totalPrice: price * quantity,
     };
 
-    dispatch(cartActions.addCart(item));
-    showToast("Your order has been successfully added", "success");
+    dispatch(
+      cartActions.addCart({
+        newItem: item,
+        userEmail: userEmail,
+      })
+    );
+    showToast(`${quantity} ${product.name} added to cart`, "success");
+    setQuantity(1);
   };
 
-  const handleRemoveFromCart = (itemId) => {
-    dispatch(cartActions.removeCart(itemId));
-    showToast("Item removed from cart!", "success");
-  };
-
-  const toggleCart = () => {
+  const handleBuyNow = () => {
+    handleAddToCart();
     dispatch(cartActions.toggleCart());
   };
 
-  const calculateTotal = () => {
-    if (!cartItems || cartItems.length === 0) {
-      return "0.00";
-    }
-
-    const total = cartItems.reduce((accumulator, item) => {
-      if (!item.price) {
-        return accumulator;
-      }
-
-      const price = cleanPrice(item.price);
-      return accumulator + price * item.quantity;
-    }, 0);
-
-    return total.toFixed(2);
+  const handleRemoveFromCart = (itemId) => {
+    const userEmail = Cookies.get("Data") || "guest";
+    dispatch(
+      cartActions.removeCart({
+        itemId: itemId,
+        userEmail: userEmail,
+      })
+    );
+    showToast("Item removed from cart!", "success");
   };
 
+  const toggleCart = () => dispatch(cartActions.toggleCart());
+
+  const calculateTotal = () => {
+    return cartItems
+      .reduce((total, item) => {
+        return total + cleanPrice(item.price) * item.quantity;
+      }, 0)
+      .toFixed(2);
+  };
+
+  const increaseQuantity = () => setQuantity((prev) => prev + 1);
+  const decreaseQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
 
   if (loading || globalLoading) {
     return <Loader />;
   }
 
+  if (!product) {
+    return (
+      <MainLayout>
+        <Navbars />
+        <Container className="my-5 py-5">
+          <Row className="justify-content-center text-center">
+            <Col md={8}>
+              <Image
+                src={Notfound}
+                alt="Product not found"
+                className="img-fluid rounded-4"
+                width={500}
+                height={400}
+                priority
+              />
+              <h3 className="mt-4">Product Not Found</h3>
+              <p className="text-muted mb-4">
+                The product you're looking for doesn't exist or has been
+                removed.
+              </p>
+              <Button
+                variant="primary"
+                as={Link}
+                href="/"
+                className="px-4 py-2"
+              >
+                Continue Shopping
+              </Button>
+            </Col>
+          </Row>
+        </Container>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <Navbars />
-      {data && (
-        <Container>
-          {filterData.length === 0 ? (
-            <Row className="vh-100 align-items-center justify-content-center">
-              <Col className="text-center">
-                <div className="text-center  d-flex justify-content-center align-items-center flex-column">
-                  <Image
-                    src={Notfound}
-                    alt="No data available"
-                    className="rounded-pill img-fluid mx-auto"
-                    style={{ maxWidth: "730px", margin: "20px 0" }}
-                  />
-                  <h3 className="mt-3">No items found</h3>
+      <Container className="my-4 my-md-5">
+        <Row className="g-4">
+          <Col md={6}>
+            <div className="bg-light rounded-4 p-3 p-md-4 shadow-sm h-100">
+              <div className="ratio ratio-1x1 position-relative">
+                <Image
+                  src={`${Giturl}${product.image}`}
+                  alt={product.name}
+                  fill
+                  className="object-contain p-3"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              </div>
+            </div>
+          </Col>
+          <Col md={6}>
+            <div className="d-flex flex-column h-100">
+              <Badge bg="secondary" className="align-self-start mb-3">
+                {product.listingType}
+              </Badge>
+              <h1 className="mb-3 fw-bold">{product.name}</h1>
+              <div className="d-flex align-items-center mb-4">
+                <h2 className="text-primary mb-0">
+                  ₹{cleanPrice(product.price).toFixed(2)}
+                </h2>
+                {product.originalPrice && (
+                  <del className="text-muted ms-3 fs-5">
+                    ₹{cleanPrice(product.originalPrice).toFixed(2)}
+                  </del>
+                )}
+              </div>
+              <div className="d-flex align-items-center mb-4">
+                <span className="me-3 fw-medium">Quantity:</span>
+                <Button
+                  variant="outline-secondary"
+                  onClick={decreaseQuantity}
+                  disabled={quantity <= 1}
+                  className="px-3 py-2"
+                >
+                  <FaMinus />
+                </Button>
+                <span className="mx-3 fs-5 fw-bold">{quantity}</span>
+                <Button
+                  variant="outline-secondary"
+                  onClick={increaseQuantity}
+                  className="px-3 py-2"
+                >
+                  <FaPlus />
+                </Button>
+              </div>
+              <div className="d-flex flex-wrap gap-3 mb-4">
+                <Button
+                  variant="primary"
+                  onClick={handleAddToCart}
+                  className="flex-grow-1 py-3"
+                  size="lg"
+                >
+                  Add to Cart
+                </Button>
+
+                <Button
+                  variant="warning"
+                  className="text-white flex-grow-1 py-3"
+                  size="lg"
+                  onClick={handleBuyNow}
+                >
+                  Buy Now
+                </Button>
+
+                <Button
+                  variant="outline-primary"
+                  className="position-relative p-3"
+                  onClick={toggleCart}
+                  aria-label="View cart"
+                >
+                  <FaShopify size={20} />
+                  {cartItems.length > 0 && (
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                      {cartItems.reduce(
+                        (total, item) => total + item.quantity,
+                        0
+                      )}
+                    </span>
+                  )}
+                </Button>
+              </div>
+              <div className="mb-4">
+                <h5 className="mb-3">Description</h5>
+                <p className="text-muted">{product.discription}</p>
+              </div>
+              {product.listingType === "sketeboard" && (
+                <div className="mb-4">
+                  <h5 className="mb-3">Features</h5>
+                  <ul className="list-unstyled">
+                    <li className="mb-2">
+                      <strong>Deck:</strong> 26 x 6.5, made of fiber for smooth
+                      rides
+                    </li>
+                    <li className="mb-2">
+                      <strong>Bearings & Wheels:</strong> High-precision ball
+                      bearings, PVC wheels
+                    </li>
+                    <li className="mb-2">
+                      <strong>Design:</strong> Unique graphics for style
+                    </li>
+                    <li>
+                      <strong>Weight Capacity:</strong> Up to 75kg
+                    </li>
+                  </ul>
                 </div>
-              </Col>
-            </Row>
-          ) : (
-            <Row className="vh-100 align-items-center justify-content-center prodcts_details">
-              {filterData.map((item) => (
-                <React.Fragment key={item.id}>
-                  <Col md={5}>
-                    {item.id === "37" ? (
-                      <Image
-                        src={`${Giturl}${item.image}`}
-                        alt={item.name}
-                        width={500}
-                        height={500}
-                        className="height_tybe"
-                      />
-                    ) : (
-                      <Image
-                        src={`${Giturl}${item.image}`}
-                        alt={item.name}
-                        width={500}
-                        height={500}
-                        className="img-fluid"
-                      />
-                    )}
-                  </Col>
-                  <Col md={7}>
-                    <h2>{item.name}</h2>
-                    <h5>Price: ₹{cleanPrice(item.price).toFixed(2)}</h5>
-                    <p>Category: {item.listingType}</p>
-                    <p>Description: {item.discription}</p>
-                    {item.listingType === "sketeboard" && (
-                      <ul style={{ listStyleType: "disc", marginLeft: "20px" }}>
-                        <li>
-                          Skateboard Deck: 26 x 6.5, made of fiber for smooth
-                          rides.
-                        </li>
-                        <li>
-                          Bearings & Wheels: High-precision ball bearings, PVC
-                          wheels.
-                        </li>
-                        <li>Attractive Designs: Unique graphics for style.</li>
-                        <li>Weight Capacity: Can handle up to 75kg.</li>
-                      </ul>
-                    )}
-                    <div className="d-flex justify-content-between justify-content-md-start my-3 align-items-center gap-md-3">
-                      <Button
-                        variant="primary"
-                        onClick={() => handleAddToCart(item)}
-                        className="me-2 py-2"
-                        aria-label="Add to cart"
-                      >
-                        Add to cart
-                      </Button>
-
-                      <Button
-                        variant="warning"
-                        className="py-2 px-3 text-white"
-                        aria-label="Buy now"
-                      >
-                        Buy Now
-                      </Button>
-                      <FaShopify
-                        onClick={toggleCart}
-                        className={`fs-1 ${
-                          cartItems.length > 0 ? "zoom-animation" : "primary_color"
-                        }`}
-                        style={{ cursor: "pointer" }}
-                        aria-label="View cart"
-                      />
-                    </div>
-
-                    <Offcanvas show={showCart} onHide={toggleCart}>
-                      <Offcanvas.Header closeButton>
-                        <Offcanvas.Title>Order Products</Offcanvas.Title>
-                      </Offcanvas.Header>
-                      <Offcanvas.Body className="d-flex flex-column gap-3">
-                        {cartItems.length > 0 ? (
-                          cartItems.map((cartItem, index) => (
-                            <div
-                              key={index}
-                              className="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2"
-                            >
-                              <div>
-                                <h6 className="mb-0">{cartItem.name}</h6>
-                                <small>Category: {cartItem.listingType}</small>
-                              </div>
-                              <div className="d-flex align-items-center gap-3">
-                                <span className="fw-bold">
-                                  ₹{cleanPrice(cartItem.totalPrice).toFixed(2)}
-                                </span>
-                                <button
-                                  className="btn btn-sm btn-outline-danger"
-                                  onClick={() =>
-                                    handleRemoveFromCart(cartItem.id)
-                                  }
-                                  aria-label="Remove item"
-                                >
-                                  <RiDeleteBin5Line />
-                                </button>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <p>Your cart is empty</p>
-                        )}
-                        <div className="d-flex justify-content-between">
-                          <h5>Total: ₹{calculateTotal()}</h5>
+              )}
+            </div>
+          </Col>
+        </Row>
+        <Offcanvas show={showCart} onHide={toggleCart} placement="end">
+          <Offcanvas.Header closeButton className="border-bottom">
+            <Offcanvas.Title className="fw-bold">
+              Your Shopping Cart (
+              {cartItems.reduce((total, item) => total + item.quantity, 0)})
+            </Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body className="d-flex flex-column">
+            {cartItems.length === 0 ? (
+              <div className="text-center my-auto py-5">
+                <FaShopify size={48} className="text-muted mb-3" />
+                <h5 className="mb-2">Your cart is empty</h5>
+                <p className="text-muted mb-4">
+                  Start shopping to add items to your cart
+                </p>
+                <Button variant="primary" onClick={toggleCart} className="px-4">
+                  Continue Shopping
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex-grow-1 overflow-auto">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="border-bottom pb-3 mb-3">
+                      <div className="d-flex gap-3">
+                        <div className="flex-shrink-0">
+                          <Image
+                            src={`${Giturl}${item.image}`}
+                            alt={item.name}
+                            width={80}
+                            height={80}
+                            className="rounded-3"
+                          />
                         </div>
-                      </Offcanvas.Body>
-                    </Offcanvas>
-                  </Col>
-                </React.Fragment>
-              ))}
-            </Row>
-          )}
-        </Container>
-      )}
+                        <div className="flex-grow-1">
+                          <h6 className="mb-1 fw-bold">{item.name}</h6>
+                          <div className="d-flex justify-content-between mb-2">
+                            <small className="text-muted">
+                              ₹{item.price.toFixed(2)} × {item.quantity}
+                            </small>
+                            <span className="fw-bold">
+                              ₹{(item.price * item.quantity).toFixed(2)}
+                            </span>
+                          </div>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={() => handleRemoveFromCart(item.id)}
+                            className="mt-1"
+                          >
+                            <RiDeleteBin5Line className="me-1" /> Remove
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-top pt-3 mt-auto">
+                  <div className="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <span>₹{calculateTotal()}</span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-3">
+                    <span>Shipping:</span>
+                    <span className="text-success">FREE</span>
+                  </div>
+                  <div className="d-flex justify-content-between fw-bold fs-5 mb-4">
+                    <span>Total:</span>
+                    <span>₹{calculateTotal()}</span>
+                  </div>
+
+                  <Button
+                    variant="success"
+                    size="lg"
+                    className="w-100 py-3 fw-bold text-white"
+                    as={Link}
+                    href="/checkout"
+                  >
+                    Proceed to Checkout
+                  </Button>
+                </div>
+              </>
+            )}
+          </Offcanvas.Body>
+        </Offcanvas>
+      </Container>
     </MainLayout>
   );
 }
-
-export default Blog;

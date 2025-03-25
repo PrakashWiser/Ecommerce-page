@@ -9,119 +9,197 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Cookies from "js-cookie";
 import { showToast } from "@/app/user/components/ToastMessage";
+import { useDispatch } from "react-redux";
+import { cartActions } from "@/app/api/redux/cartSlice";
 
 const Login = () => {
   const [apiData, setApiData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    axios
-      .get("https://66f0f85341537919154f06e7.mockapi.io/signup")
-      .then((response) => {
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(
+          "https://66f0f85341537919154f06e7.mockapi.io/signup"
+        );
         setApiData(response.data);
-      })
-      .catch(() => showToast("Failed to fetch user data", "error"));
+      } catch (error) {
+        showToast("Failed to fetch user data", "error");
+        console.error("Error fetching user data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   const validationSchema = Yup.object().shape({
     email: Yup.string()
       .email("Invalid email format")
       .required("Email is required"),
-    password: Yup.string().required("Password is required"),
+    password: Yup.string()
+      .required("Password is required")
+      .min(6, "Password must be at least 6 characters"),
   });
 
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values, { setSubmitting }) => {
     const { email, password } = values;
-    const user = apiData.find((item) => item.email === email);
 
-    if (!user) {
-      showToast("Can't find your email, please register first", "error");
-      router.push("/user/signupp");
-    } else if (user.password !== password) {
-      showToast("Incorrect password, please try again", "warning");
-    } else {
-      const successMessage = "Successfully Logged In";
-      const cookieName =
-        user.email === "prakashlunatic2@gmail.com" ? "Admin" : "Data";
-      const redirectPath =
-        user.email === "prakashlunatic2@gmail.com"
-          ? "/admin/adminproductsdetails"
-          : "/";
+    try {
+      const user = apiData.find((item) => item.email === email);
 
-      showToast(successMessage, "success");
-      setTimeout(() => {
-        Cookies.set(cookieName, user.email, { expires: 7 });
-        router.push(redirectPath);
-      }, 2000);
+      if (!user) {
+        showToast("Can't find your email, please register first", "error");
+        return;
+      }
+
+      if (user.password !== password) {
+        showToast("Incorrect password, please try again", "warning");
+        return;
+      }
+
+      dispatch(cartActions.loadUserCart({ email: user.email }));
+
+      const isAdmin = user.email === "prakashlunatic2@gmail.com";
+      const cookieName = isAdmin ? "Admin" : "Data";
+      const redirectPath = isAdmin ? "/admin/adminproductsdetails" : "/";
+
+      showToast("Successfully Logged In", "success");
+
+      Cookies.set(
+        cookieName,
+        JSON.stringify({
+          email: user.email,
+          name: user.name || "",
+        }),
+        {
+          expires: 7,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+        }
+      );
+
+      router.push(redirectPath);
+    } catch (error) {
+      console.error("Login error:", error);
+      showToast("An error occurred during login", "error");
+    } finally {
+      setSubmitting(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-success" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container d-flex flex-column justify-content-center align-items-center vh-100">
-      <div className="text-center">
+      <div className="text-center mb-4">
         <a
           href="https://github.com/prakashwiser/"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="View GitHub profile"
+          className="d-inline-block mb-3"
         >
-          <ImGithub className="fs-2 text-dark mb-3" />
+          <ImGithub className="fs-2 text-dark" />
         </a>
-        <h1 className="fw-bold text-success mb-4">Sign in</h1>
+        <h1 className="fw-bold text-success mb-3">Sign in</h1>
+        <p className="text-muted">Welcome back! Please enter your details</p>
       </div>
+
       <Formik
         initialValues={{ email: "", password: "" }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ isSubmitting }) => (
-          <Form className="w-100" style={{ maxWidth: "400px" }}>
+        {({ isSubmitting, errors, touched }) => (
+          <Form
+            className="w-100 bg-white p-4 rounded-3 shadow-sm"
+            style={{ maxWidth: "400px" }}
+          >
             <div className="mb-3">
-              <label htmlFor="email" className="form-label">
-                Email
+              <label htmlFor="email" className="form-label fw-semibold">
+                Email address
               </label>
               <Field
                 type="email"
                 name="email"
                 id="email"
-                className="form-control shadow-sm"
-                placeholder="Enter Email"
+                className={`form-control ${
+                  touched.email && errors.email ? "is-invalid" : ""
+                }`}
+                placeholder="Enter your email"
+                autoComplete="username"
               />
               <ErrorMessage
                 name="email"
                 component="div"
-                className="text-danger mt-1"
+                className="invalid-feedback"
               />
             </div>
+
             <div className="mb-3">
-              <label htmlFor="password" className="form-label">
+              <label htmlFor="password" className="form-label fw-semibold">
                 Password
               </label>
               <Field
                 type="password"
                 name="password"
                 id="password"
-                className="form-control shadow-sm"
-                placeholder="Enter Password"
+                className={`form-control ${
+                  touched.password && errors.password ? "is-invalid" : ""
+                }`}
+                placeholder="Enter your password"
+                autoComplete="current-password"
               />
               <ErrorMessage
                 name="password"
                 component="div"
-                className="text-danger mt-1"
+                className="invalid-feedback"
               />
             </div>
+
             <div className="d-flex justify-content-between align-items-center mt-4">
               <button
                 type="submit"
-                className="btn btn-success fw-bold shadow-sm px-4"
+                className="btn btn-success fw-bold px-4 py-2"
                 disabled={isSubmitting}
               >
+                {isSubmitting ? (
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                ) : null}
                 Sign in
               </button>
+
               <Link
                 href="/user/signupp"
-                className="btn btn-outline-primary fw-bold shadow-sm px-4"
+                className="btn btn-outline-primary fw-bold px-4 py-2"
               >
                 Create Account
+              </Link>
+            </div>
+
+            <div className="text-center mt-3">
+              <Link
+                href="/user/forgot-password"
+                className="text-decoration-none"
+              >
+                Forgot password?
               </Link>
             </div>
           </Form>

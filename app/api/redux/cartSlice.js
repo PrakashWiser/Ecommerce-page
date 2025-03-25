@@ -1,6 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const loadCart = () => {
+const getCartKey = (email) => {
+  return email ? `cart_${email}` : 'cart_guest';
+};
+
+const loadCart = (email) => {
   if (typeof window === "undefined") {
     return {
       cartItems: [],
@@ -9,7 +13,8 @@ const loadCart = () => {
     };
   }
 
-  const savedCart = localStorage.getItem("cart");
+  const key = getCartKey(email);
+  const savedCart = localStorage.getItem(key);
   return savedCart
     ? JSON.parse(savedCart)
     : {
@@ -19,19 +24,20 @@ const loadCart = () => {
       };
 };
 
-const saveCart = (cart) => {
+const saveCart = (cart, email) => {
   if (typeof window !== "undefined") {
-    localStorage.setItem("cart", JSON.stringify(cart));
+    const key = getCartKey(email);
+    localStorage.setItem(key, JSON.stringify(cart));
   }
 };
 
-const initialState = loadCart();
+const initialState = loadCart(null);
 const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
     addCart(state, action) {
-      const newItem = action.payload;
+      const { newItem, userEmail } = action.payload;
       const existingItem = state.cartItems.find(
         (item) => item.id === newItem.id
       );
@@ -53,29 +59,47 @@ const cartSlice = createSlice({
         });
       }
       state.totalQuantity += 1;
-      saveCart(state);
+      saveCart(state, userEmail);
     },
     removeCart(state, action) {
-      const itemId = action.payload;
+      const { itemId, userEmail } = action.payload;
       const existingItem = state.cartItems.find((item) => item.id === itemId);
 
       if (existingItem) {
         state.totalQuantity -= existingItem.quantity;
         state.cartItems = state.cartItems.filter((item) => item.id !== itemId);
-        saveCart(state);
+        saveCart(state, userEmail);
+      }
+    },
+    updateQuantity(state, action) {
+      const { id, newQuantity, userEmail } = action.payload;
+      const existingItem = state.cartItems.find((item) => item.id === id);
+
+      if (existingItem) {
+        const quantityDifference = newQuantity - existingItem.quantity;
+        existingItem.quantity = newQuantity;
+        existingItem.totalPrice = parseFloat(
+          (existingItem.price * newQuantity).toFixed(2)
+        );
+        state.totalQuantity += quantityDifference;
+        saveCart(state, userEmail);
       }
     },
     toggleCart(state) {
       state.showCart = !state.showCart;
-      saveCart(state);
     },
-    clearCart(state) {
+    clearCart(state, action) {
+      const { userEmail } = action.payload;
       state.cartItems = [];
       state.totalQuantity = 0;
-      saveCart(state);
+      saveCart(state, userEmail);
     },
     updateCartFromStorage(state, action) {
       return action.payload;
+    },
+    loadUserCart(state, action) {
+      const { email } = action.payload;
+      return loadCart(email);
     },
   },
 });
@@ -83,7 +107,7 @@ const cartSlice = createSlice({
 export const setupCartSync = (store) => {
   if (typeof window !== "undefined") {
     window.addEventListener("storage", (event) => {
-      if (event.key === "cart") {
+      if (event.key.startsWith("cart_")) {
         const newCart = JSON.parse(event.newValue);
         store.dispatch(cartActions.updateCartFromStorage(newCart));
       }

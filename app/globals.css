@@ -217,6 +217,30 @@ hr,
   }
 }
 
+.flash-hover-btn {
+  background-color: #4e73df;
+  transition: background-color 0.2s ease;
+}
+
+.flash-hover-btn {
+  background-color: #e74a3b;
+  animation: colorFlash 0.3s linear infinite;
+}
+@keyframes colorFlash {
+  0% {
+    background-color: #4e73df;
+  }
+  50% {
+    background-color: #3a56b0;
+  }
+  100% {
+    background-color: #224abe;
+  }
+}
+
+.flash-hover-btn:hover {
+  animation: colorFlash 0.4s forwards;
+}
 @media (min-width: 1200px) {
   .home_sec_one h1 {
     width: 70%;
