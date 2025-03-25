@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+"use client"
+import React, { useState, useEffect,  } from "react";
 import MainLayout from "@/app/Layout/MainLayout";
 import { Container, Row, Col, Button, Card, Spinner, Modal } from "react-bootstrap";
 import Navbars from "../components/Navbars";
