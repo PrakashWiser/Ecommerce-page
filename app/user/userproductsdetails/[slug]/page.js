@@ -1,55 +1,137 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import MainLayout from "@/app/Layout/MainLayout";
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  Card,
-  Spinner,
-  Modal,
-} from "react-bootstrap";
+import { Container, Row, Col, Button, Badge } from "react-bootstrap";
+import Offcanvas from "react-bootstrap/Offcanvas";
 import Navbars from "@/app/user/components/Navbars";
-import { MdDelete } from "react-icons/md";
-import { useSelector, useDispatch } from "react-redux";
+import { RiDeleteBin5Line } from "react-icons/ri";
+import { useParams, useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 import { cartActions } from "@/app/api/redux/cartSlice";
 import { showToast } from "@/app/user/components/ToastMessage";
-import Image from "next/image";
-import Emptys from "@/app/assets/images/direct_empty_cart.webp";
-import { FaMinus, FaPlus } from "react-icons/fa";
-import Link from "next/link";
+import Loader from "@/app/user/components/Loader";
 import Cookies from "js-cookie";
+import { FaShopify, FaPlus, FaMinus } from "react-icons/fa";
+import { useGlobalContext } from "@/app/api/providers/GlobalContext";
+import Image from "next/image";
+import Notfound from "@/app/assets/images/no-found.jpg";
+import Link from "next/link";
+
+const debounce = (func, wait) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
+const cleanPrice = (price) => {
+  if (typeof price === "string") {
+    return parseFloat(price.replace(/[^0-9.]/g, ""));
+  }
+  return price;
+};
 
 const Giturl =
   "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
+const MAX_QUANTITY = 10;
 
-function ShopCollection() {
-  const cartItems = useSelector((state) => state.cart?.cartItems || []);
+export default function ProductDetailPage() {
+  const params = useParams();
+  const productId = params?.slug;
   const dispatch = useDispatch();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [showOrderModal, setShowOrderModal] = useState(false);
+  const router = useRouter();
+  const [product, setProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  const userEmail = Cookies.get("Data") || "guest";
+  const { cartItems, showCart } = useSelector((state) => state.cart);
+  const { data: globalData, loading: globalLoading } = useGlobalContext();
 
   useEffect(() => {
-    console.log("Initializing cart with email:", userEmail);
+    const userEmail = Cookies.get("Data") || "guest";
     dispatch(cartActions.initializeCart({ email: userEmail }));
-  }, [dispatch, userEmail]);
 
-  useEffect(() => {
-    console.log("Current cartItems:", cartItems);
-  }, [cartItems]);
+    if (!productId) {
+      setLoading(false);
+      return;
+    }
 
-  const getTotalPrice = () => {
-    return cartItems
-      .reduce((acc, item) => acc + item.price * item.quantity, 0)
-      .toFixed(2);
+    if (globalData) {
+      const foundProduct = globalData.find((item) => item.id == productId);
+      setProduct(foundProduct);
+      setLoading(false);
+    }
+
+    const userData = Cookies.get("Data");
+    if (!userData) {
+      showToast("Please Login", "error");
+      setInterval(() => {
+        router.push("/user/signin");
+      }, 1500);
+    }
+  }, [globalData, router, productId, dispatch]);
+
+  const handleAddToCart = debounce(() => {
+    if (!product?.price) {
+      showToast("Item price is missing!", "error");
+      return;
+    }
+
+    const price = cleanPrice(product.price);
+    const existingItem = cartItems.find((item) => item.id === product.id);
+
+    try {
+      if (existingItem) {
+        const newQuantity = existingItem.quantity + quantity;
+        if (newQuantity > MAX_QUANTITY) {
+          showToast(`Maximum quantity (${MAX_QUANTITY}) reached`, "error");
+          return;
+        }
+        dispatch(
+          cartActions.updateQuantity({
+            id: product.id,
+            newQuantity: newQuantity,
+          })
+        );
+        showToast(`${quantity} more ${product.name} added to cart`, "success");
+      } else {
+        if (quantity > MAX_QUANTITY) {
+          showToast(`Maximum quantity (${MAX_QUANTITY}) allowed`, "error");
+          return;
+        }
+        const item = {
+          ...product,
+          price: price,
+          quantity: quantity,
+          totalPrice: price * quantity,
+        };
+        dispatch(
+          cartActions.addCart({
+            newItem: item,
+          })
+        );
+        showToast(`${quantity} ${product.name} added to cart`, "success");
+      }
+      setQuantity(1);
+    } catch (error) {
+      showToast("Failed to update cart", "error");
+      console.error("Add to cart error:", error);
+    }
+  }, 300);
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    dispatch(cartActions.toggleCart());
   };
 
-  const handleRemoveFromCart = (id) => {
+  const handleRemoveFromCart = (itemId) => {
     try {
-      dispatch(cartActions.removeCart({ itemId: id }));
+      dispatch(
+        cartActions.removeCart({
+          itemId: itemId,
+        })
+      );
       showToast("Item removed from cart!", "success");
     } catch (error) {
       showToast("Failed to remove item", "error");
@@ -57,269 +139,284 @@ function ShopCollection() {
     }
   };
 
-  // Increment item quantity
-  const handleIncrement = (id) => {
-    const item = cartItems.find((item) => item.id === id);
-    if (item) {
-      const newQuantity = item.quantity + 1;
-      if (newQuantity > 10) {
-        // Assuming MAX_QUANTITY from cartSlice.js
-        showToast("Maximum quantity reached!", "error");
-        return;
-      }
-      dispatch(
-        cartActions.updateQuantity({
-          id: item.id,
-          newQuantity,
-        })
-      );
-      showToast("Quantity increased!", "success");
-    }
+  const toggleCart = () => {
+    dispatch(cartActions.toggleCart());
   };
 
-  // Decrement item quantity
-  const handleDecrement = (id) => {
-    const item = cartItems.find((item) => item.id === id);
-    if (item) {
-      const newQuantity = item.quantity - 1;
-      if (newQuantity < 1) {
-        handleRemoveFromCart(id);
-      } else {
-        dispatch(
-          cartActions.updateQuantity({
-            id: item.id,
-            newQuantity,
-          })
-        );
-        showToast("Quantity decreased!", "success");
-      }
-    }
+  const calculateTotal = () => {
+    return cartItems
+      .reduce((total, item) => {
+        return total + cleanPrice(item.price) * item.quantity;
+      }, 0)
+      .toFixed(2);
   };
 
-  const handleCheckout = async () => {
-    setIsProcessing(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setShowOrderModal(true);
-    } catch (error) {
-      showToast("Checkout failed. Please try again.", "error");
-      console.error("Checkout error:", error);
-    } finally {
-      setIsProcessing(false);
-    }
+  const increaseQuantity = () => {
+    setQuantity((prev) => Math.min(prev + 1, MAX_QUANTITY));
   };
 
-  const confirmOrder = () => {
-    setShowOrderModal(false);
-    dispatch(cartActions.clearCart());
-    showToast("Order placed successfully!", "success");
+  const decreaseQuantity = () => {
+    setQuantity((prev) => Math.max(1, prev - 1));
   };
+
+  if (loading || globalLoading) {
+    return <Loader />;
+  }
+
+  if (!product) {
+    return (
+      <MainLayout>
+        <Navbars />
+        <Container className="my-5 py-5">
+          <Row className="justify-content-center text-center">
+            <Col md={8}>
+              <Image
+                src={Notfound}
+                alt="Product not found"
+                className="img-fluid rounded-4"
+                width={500}
+                height={400}
+                priority
+              />
+              <h3 className="mt-4">Product Not Found</h3>
+              <p className="text-muted mb-4">
+                The product you\'re looking for doesn\'t exist or has been
+                removed.
+              </p>
+              <Button
+                variant="primary"
+                as={Link}
+                href="/"
+                className="px-4 py-2"
+              >
+                Continue Shopping
+              </Button>
+            </Col>
+          </Row>
+        </Container>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
       <Navbars />
-      <Container className="my-4 min-vh-100">
-        {cartItems.length > 0 ? (
-          <>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2 className="mb-0 primary_color fw-bold">Your Shopping Cart</h2>
-              <h3 className="mb-0 primary_color fw-bold">
-                Total: ₹{getTotalPrice()}
-              </h3>
+      <Container className="my-4 my-md-5">
+        <Row className="g-4">
+          <Col md={6}>
+            <div className="bg-light rounded-4 p-3 p-md-4 shadow-sm h-100">
+              <div className="ratio ratio-1x1 position-relative">
+                <Image
+                  src={`${Giturl}${product.image}`}
+                  alt={product.name}
+                  fill
+                  className="object-contain p-3"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              </div>
             </div>
+          </Col>
 
-            <Row>
-              <Col md={8}>
-                {cartItems.map((item) => (
-                  <Card key={item.id} className="mb-3 shadow-sm">
-                    <Card.Body>
-                      <Row className="align-items-center">
-                        <Col md={3} xs={4}>
-                          <div
-                            className="position-relative"
-                            style={{ height: "120px" }}
-                          >
-                            <Image
-                              src={`${Giturl}${item.image}`}
-                              alt={item.name}
-                              fill
-                              className="img-fluid rounded object-fit-cover"
-                              sizes="(max-width: 768px) 100px, 200px"
-                            />
-                          </div>
-                        </Col>
-                        <Col md={5} xs={8}>
-                          <Card.Title className="fw-bold">
-                            {item.name}
-                          </Card.Title>
-                          <Card.Text className="text-muted mb-1">
-                            Category: {item.listingType}
-                          </Card.Text>
-                          <Card.Text className="fw-bold text-muted mb-2">
-                            Price: ₹{item.price.toFixed(2)}
-                          </Card.Text>
-                          <Button
-                            variant="info"
-                            className="text-white"
-                            size="sm"
-                            as={Link}
-                            href={`/user/userproductsdetails/${item.id}`}
-                          >
-                            View Details
-                          </Button>
-                        </Col>
-                        <Col md={4} className="text-end mt-3 mt-md-0">
-                          <div className="d-flex align-items-center justify-content-end mb-2">
-                            <Button
-                              variant="outline-secondary"
-                              size="sm"
-                              className="px-3"
-                              onClick={() => handleDecrement(item.id)}
-                              aria-label="Decrease quantity"
-                              disabled={item.quantity <= 1}
-                            >
-                              <FaMinus />
-                            </Button>
-                            <span className="mx-3 fw-bold">
+          <Col md={6}>
+            <div className="d-flex flex-column h-100">
+              <Badge bg="secondary" className="align-self-start mb-3">
+                {product.listingType}
+              </Badge>
+
+              <h1 className="mb-3 fw-bold">{product.name}</h1>
+
+              <div className="d-flex align-items-center mb-4">
+                <h2 className="text-primary mb-0">
+                  ₹{cleanPrice(product.price).toFixed(2)}
+                </h2>
+                {product.originalPrice && (
+                  <del className="text-muted ms-3 fs-5">
+                    ₹{cleanPrice(product.originalPrice).toFixed(2)}
+                  </del>
+                )}
+              </div>
+
+              <div className="d-flex align-items-center mb-4">
+                <span className="me-3 fw-medium">Quantity:</span>
+                <Button
+                  variant="outline-secondary"
+                  onClick={decreaseQuantity}
+                  disabled={quantity <= 1}
+                  className="px-3 py-2"
+                >
+                  <FaMinus />
+                </Button>
+                <span className="mx-3 fs-5 fw-bold">{quantity}</span>
+                <Button
+                  variant="outline-secondary"
+                  onClick={increaseQuantity}
+                  className="px-3 py-2"
+                >
+                  <FaPlus />
+                </Button>
+              </div>
+
+              <div className="d-flex flex-wrap gap-3 mb-4">
+                <Button
+                  variant="primary"
+                  onClick={handleAddToCart}
+                  className="flex-grow-1 py-3"
+                  size="lg"
+                >
+                  Add to Cart
+                </Button>
+
+                <Button
+                  variant="warning"
+                  className="text-white flex-grow-1 py-3"
+                  size="lg"
+                  onClick={handleBuyNow}
+                >
+                  Buy Now
+                </Button>
+
+                <Button
+                  variant="outline-primary"
+                  className="position-relative p-3"
+                  onClick={toggleCart}
+                  aria-label="View cart"
+                >
+                  <FaShopify size={20} />
+                  {cartItems.length > 0 && (
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                      {cartItems.reduce(
+                        (total, item) => total + item.quantity,
+                        0
+                      )}
+                    </span>
+                  )}
+                </Button>
+              </div>
+
+              <div className="mb-4">
+                <h5 className="mb-3">Description</h5>
+                <p className="text-muted">
+                  {product.description || "No description available"}
+                </p>
+              </div>
+
+              {product.listingType === "skateboard" && (
+                <div className="mb-4">
+                  <h5 className="mb-3">Features</h5>
+                  <ul className="list-unstyled">
+                    <li className="mb-2">
+                      <strong>Deck:</strong> 26 x 6.5, made of fiber for smooth
+                      rides
+                    </li>
+                    <li className="mb-2">
+                      <strong>Bearings & Wheels:</strong> High-precision ball
+                      bearings, PVC wheels
+                    </li>
+                    <li className="mb-2">
+                      <strong>Design:</strong> Unique graphics for style
+                    </li>
+                    <li>
+                      <strong>Weight Capacity:</strong> Up to 75kg
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </Col>
+        </Row>
+
+        <Offcanvas show={showCart} onHide={toggleCart} placement="end">
+          <Offcanvas.Header closeButton className="border-bottom">
+            <Offcanvas.Title className="fw-bold">
+              Your Shopping Cart (
+              {cartItems.reduce((total, item) => total + item.quantity, 0)})
+            </Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body className="d-flex flex-column">
+            {cartItems.length === 0 ? (
+              <div className="text-center my-auto py-5">
+                <FaShopify size={48} className="text-muted mb-3" />
+                <h5 className="mb-2">Your cart is empty</h5>
+                <p className="text-muted mb-4">
+                  Start shopping to add items to your cart
+                </p>
+                <Button variant="primary" onClick={toggleCart} className="px-4">
+                  Continue Shopping
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex-grow-1 overflow-auto">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="border-bottom pb-3 mb-3">
+                      <div className="d-flex gap-3">
+                        <div className="flex-shrink-0">
+                          <Image
+                            src={`${Giturl}${item.image}`}
+                            alt={item.name}
+                            width={80}
+                            height={80}
+                            className="rounded-3"
+                          />
+                        </div>
+                        <div className="flex-grow-1">
+                          <h6 className="mb-1 fw-bold">{item.name}</h6>
+                          <div className="d-flex justify-content-between mb-2">
+                            <small className="text-muted">
+                              ₹{cleanPrice(item.price).toFixed(2)} ×{" "}
                               {item.quantity}
+                            </small>
+                            <span className="fw-bold">
+                              ₹
+                              {(cleanPrice(item.price) * item.quantity).toFixed(
+                                2
+                              )}
                             </span>
-                            <Button
-                              variant="outline-secondary"
-                              size="sm"
-                              className="px-3"
-                              onClick={() => handleIncrement(item.id)}
-                              aria-label="Increase quantity"
-                            >
-                              <FaPlus />
-                            </Button>
                           </div>
-                          <Card.Text className="fw-bold">
-                            Total: ₹{(item.price * item.quantity).toFixed(2)}
-                          </Card.Text>
                           <Button
-                            variant="danger"
+                            variant="outline-danger"
                             size="sm"
                             onClick={() => handleRemoveFromCart(item.id)}
-                            className="mt-2"
-                            aria-label="Remove item"
+                            className="mt-1"
                           >
-                            <MdDelete className="me-1" /> Remove
+                            <RiDeleteBin5Line className="me-1" /> Remove
                           </Button>
-                        </Col>
-                      </Row>
-                    </Card.Body>
-                  </Card>
-                ))}
-              </Col>
-              <Col md={4}>
-                <Card className="shadow-sm sticky-top" style={{ top: "20px" }}>
-                  <Card.Body>
-                    <Card.Title className="fw-bold mb-4">
-                      Order Summary
-                    </Card.Title>
-                    <div className="d-flex justify-content-between mb-2">
-                      <span>
-                        Subtotal (
-                        {cartItems.reduce(
-                          (sum, item) => sum + item.quantity,
-                          0
-                        )}{" "}
-                        items)
-                      </span>
-                      <span>₹{getTotalPrice()}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="d-flex justify-content-between mb-2">
-                      <span>Discount</span>
-                      <span className="text-success">-₹0.00</span>
-                    </div>
-                    <div className="d-flex justify-content-between mb-3">
-                      <span>Shipping</span>
-                      <span className="text-success">FREE</span>
-                    </div>
-                    <hr />
-                    <div className="d-flex justify-content-between fw-bold fs-5 mb-4">
-                      <span>Total</span>
-                      <span>₹{getTotalPrice()}</span>
-                    </div>
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      className="w-100 mt-3 flash-hover-btn white-btn"
-                      onClick={handleCheckout}
-                      disabled={isProcessing || cartItems.length === 0}
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                            className="me-2"
-                          />
-                          Processing...
-                        </>
-                      ) : (
-                        "Place Order"
-                      )}
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
-          </>
-        ) : (
-          <div className="text-center py-5">
-            <Image
-              src={Emptys}
-              alt="Empty cart"
-              width={300}
-              height={300}
-              className="img-fluid mb-4"
-              priority
-            />
-            <h3 className="mb-3">Your cart is empty</h3>
-            <p className="text-muted mb-4">
-              Looks like you haven&apos;t added anything to your cart yet
-            </p>
-            <Button variant="primary" className="text-white" href="/" as={Link}>
-              Continue Shopping
-            </Button>
-          </div>
-        )}
+                  ))}
+                </div>
 
-        <Modal
-          show={showOrderModal}
-          onHide={() => setShowOrderModal(false)}
-          centered
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Order Confirmation</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p className="fw-bold mb-3">
-              Your order has been placed successfully!
-            </p>
-            <div className="mb-3">
-              <p>Order Summary:</p>
-              <ul className="list-unstyled">
-                <li>Total Items: {cartItems.length}</li>
-                <li>Order Total: ₹{getTotalPrice()}</li>
-                <li>Estimated Delivery: 3-5 business days</li>
-              </ul>
-            </div>
-            <p>Thank you for your purchase!</p>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="primary" onClick={confirmOrder}>
-              Continue Shopping
-            </Button>
-          </Modal.Footer>
-        </Modal>
+                <div className="border-top pt-3 mt-auto">
+                  <div className="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <span>₹{calculateTotal()}</span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-3">
+                    <span>Shipping:</span>
+                    <span className="text-success">FREE</span>
+                  </div>
+                  <div className="d-flex justify-content-between fw-bold fs-5 mb-4">
+                    <span>Total:</span>
+                    <span>₹{calculateTotal()}</span>
+                  </div>
+
+                  <Button
+                    variant="success"
+                    size="lg"
+                    className="w-100 py-3 fw-bold text-white"
+                    as={Link}
+                    href="/user/usershopcollection"
+                  >
+                    Proceed to Checkout
+                  </Button>
+                </div>
+              </>
+            )}
+          </Offcanvas.Body>
+        </Offcanvas>
       </Container>
     </MainLayout>
   );
 }
-
-export default ShopCollection;
