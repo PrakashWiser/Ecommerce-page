@@ -10,7 +10,7 @@ import {
   Spinner,
   Modal,
 } from "react-bootstrap";
-import Navbars from "../components/Navbars";
+import Navbars from "@/app/user/components/Navbars";
 import { MdDelete } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { cartActions } from "@/app/api/redux/cartSlice";
