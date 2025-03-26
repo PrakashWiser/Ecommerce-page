@@ -26,6 +26,7 @@ const Login = () => {
           "https://66f0f85341537919154f06e7.mockapi.io/signup"
         );
         setApiData(response.data);
+        console.log("API Data:", response.data); // Log to verify data
       } catch (error) {
         showToast("Failed to fetch user data", "error");
         console.error("Error fetching user data:", error);
@@ -50,6 +51,7 @@ const Login = () => {
     const { email, password } = values;
 
     try {
+      console.log("Submitting with:", { email, password }); 
       const user = apiData.find((item) => item.email === email);
 
       if (!user) {
@@ -62,13 +64,10 @@ const Login = () => {
         return;
       }
 
-      dispatch(cartActions.loadUserCart({ email: user.email }));
-
+      dispatch(cartActions.initializeCart({ email: user.email }));
       const isAdmin = user.email === "prakashlunatic2@gmail.com";
       const cookieName = isAdmin ? "Admin" : "Data";
       const redirectPath = isAdmin ? "/admin/adminproductsdetails" : "/";
-
-      showToast("Successfully Logged In", "success");
 
       Cookies.set(
         cookieName,
@@ -83,10 +82,15 @@ const Login = () => {
         }
       );
 
+      showToast("Successfully Logged In", "success");
       router.push(redirectPath);
     } catch (error) {
-      console.error("Login error:", error);
-      showToast("An error occurred during login", "error");
+      console.error("Detailed login error:", {
+        message: error.message,
+        stack: error.stack,
+        cause: error.cause,
+      });
+      showToast(`Login failed: ${error.message}`, "error");
     } finally {
       setSubmitting(false);
     }
