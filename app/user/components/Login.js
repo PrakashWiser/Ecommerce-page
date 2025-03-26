@@ -12,6 +12,99 @@ import { showToast } from "@/app/user/components/ToastMessage";
 import { useDispatch } from "react-redux";
 import { cartActions } from "@/app/api/redux/cartSlice";
 
+const styles = `
+  .login-container {
+    padding: 1rem;
+    min-height: 100vh;
+  }
+  .login-form {
+    width: 100%;
+    max-width: 400px;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+  .login-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+  .login-subtitle {
+    font-size: 0.95rem;
+    color: #6b7280;
+  }
+  .form-control {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+  .btn {
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  .btn-success {
+    background-color: #10b981;
+    border-color: #10b981;
+  }
+  .btn-success:hover {
+    background-color: #0da271;
+    border-color: #0da271;
+  }
+  .github-icon {
+    font-size: 1.75rem;
+    color: #1f2937;
+    transition: transform 0.2s ease;
+  }
+  .github-icon:hover {
+    transform: scale(1.1);
+  }
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  .invalid-feedback {
+    font-size: 0.85rem;
+  }
+  .forgot-password {
+    font-size: 0.9rem;
+    color: #6b7280;
+    transition: color 0.2s ease;
+  }
+  .forgot-password:hover {
+    color: #374151;
+    text-decoration: none;
+  }
+
+  @media (min-width: 768px) {
+    .login-container {
+      padding: 2rem;
+    }
+    .login-title {
+      font-size: 2rem;
+    }
+    .login-subtitle {
+      font-size: 1rem;
+    }
+    .btn-group {
+      flex-direction: row;
+      gap: 1rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .login-form {
+      padding: 1.25rem;
+    }
+    .btn-group {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .btn {
+      width: 100%;
+    }
+  }
+`;
+
 const Login = () => {
   const [apiData, setApiData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +119,6 @@ const Login = () => {
           "https://66f0f85341537919154f06e7.mockapi.io/signup"
         );
         setApiData(response.data);
-        console.log("API Data:", response.data); // Log to verify data
       } catch (error) {
         showToast("Failed to fetch user data", "error");
         console.error("Error fetching user data:", error);
@@ -51,23 +143,21 @@ const Login = () => {
     const { email, password } = values;
 
     try {
-      console.log("Submitting with:", { email, password }); 
       const user = apiData.find((item) => item.email === email);
 
       if (!user) {
-        showToast("Can't find your email, please register first", "error");
+        showToast("Email not found. Please register first.", "error");
         return;
       }
 
       if (user.password !== password) {
-        showToast("Incorrect password, please try again", "warning");
+        showToast("Incorrect password. Please try again.", "warning");
         return;
       }
 
       dispatch(cartActions.initializeCart({ email: user.email }));
       const isAdmin = user.email === "prakashlunatic2@gmail.com";
       const cookieName = isAdmin ? "Admin" : "Data";
-      const redirectPath = isAdmin ? "/admin/adminproductsdetails" : "/";
 
       Cookies.set(
         cookieName,
@@ -79,18 +169,15 @@ const Login = () => {
           expires: 7,
           secure: process.env.NODE_ENV === "production",
           sameSite: "strict",
+          path: "/",
         }
       );
 
-      showToast("Successfully Logged In", "success");
-      router.push(redirectPath);
+      showToast("Successfully logged in!", "success");
+      router.push(isAdmin ? "/admin/adminproductsdetails" : "/");
     } catch (error) {
-      console.error("Detailed login error:", {
-        message: error.message,
-        stack: error.stack,
-        cause: error.cause,
-      });
-      showToast(`Login failed: ${error.message}`, "error");
+      console.error("Login error:", error);
+      showToast("Login failed. Please try again.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -107,109 +194,109 @@ const Login = () => {
   }
 
   return (
-    <div className="container d-flex flex-column justify-content-center align-items-center vh-100">
-      <div className="text-center mb-4">
-        <a
-          href="https://github.com/prakashwiser/"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="View GitHub profile"
-          className="d-inline-block mb-3"
-        >
-          <ImGithub className="fs-2 text-dark" />
-        </a>
-        <h1 className="fw-bold text-success mb-3">Sign in</h1>
-        <p className="text-muted">Welcome back! Please enter your details</p>
-      </div>
-
-      <Formik
-        initialValues={{ email: "", password: "" }}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ isSubmitting, errors, touched }) => (
-          <Form
-            className="w-100 bg-white p-4 rounded-3 shadow-sm"
-            style={{ maxWidth: "400px" }}
+    <>
+      <style>{styles}</style>
+      <div className="login-container d-flex flex-column justify-content-center align-items-center">
+        <div className="text-center mb-4">
+          <a
+            href="https://github.com/prakashwiser/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub profile"
+            className="d-inline-block mb-3"
           >
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label fw-semibold">
-                Email address
-              </label>
-              <Field
-                type="email"
-                name="email"
-                id="email"
-                className={`form-control ${
-                  touched.email && errors.email ? "is-invalid" : ""
-                }`}
-                placeholder="Enter your email"
-                autoComplete="username"
-              />
-              <ErrorMessage
-                name="email"
-                component="div"
-                className="invalid-feedback"
-              />
-            </div>
+            <ImGithub className="github-icon" />
+          </a>
+          <h1 className="login-title mb-2">Welcome back</h1>
+          <p className="login-subtitle">Sign in to continue to your account</p>
+        </div>
 
-            <div className="mb-3">
-              <label htmlFor="password" className="form-label fw-semibold">
-                Password
-              </label>
-              <Field
-                type="password"
-                name="password"
-                id="password"
-                className={`form-control ${
-                  touched.password && errors.password ? "is-invalid" : ""
-                }`}
-                placeholder="Enter your password"
-                autoComplete="current-password"
-              />
-              <ErrorMessage
-                name="password"
-                component="div"
-                className="invalid-feedback"
-              />
-            </div>
+        <Formik
+          initialValues={{ email: "", password: "" }}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ isSubmitting, errors, touched }) => (
+            <Form className="login-form bg-white">
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label">
+                  Email
+                </label>
+                <Field
+                  type="email"
+                  name="email"
+                  id="email"
+                  className={`form-control ${
+                    touched.email && errors.email ? "is-invalid" : ""
+                  }`}
+                  placeholder="Enter your email"
+                  autoComplete="username"
+                />
+                <ErrorMessage
+                  name="email"
+                  component="div"
+                  className="invalid-feedback"
+                />
+              </div>
 
-            <div className="d-flex justify-content-between align-items-center mt-4">
-              <button
-                type="submit"
-                className="btn btn-success fw-bold px-4 py-2"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <span
-                    className="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden="true"
-                  ></span>
-                ) : null}
-                Sign in
-              </button>
+              <div className="mb-3">
+                <label htmlFor="password" className="form-label">
+                  Password
+                </label>
+                <Field
+                  type="password"
+                  name="password"
+                  id="password"
+                  className={`form-control ${
+                    touched.password && errors.password ? "is-invalid" : ""
+                  }`}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                />
+                <ErrorMessage
+                  name="password"
+                  component="div"
+                  className="invalid-feedback"
+                />
+              </div>
 
-              <Link
-                href="/user/signupp"
-                className="btn btn-outline-primary fw-bold px-4 py-2"
-              >
-                Create Account
-              </Link>
-            </div>
+              <div className="d-flex justify-content-between align-items-center mt-4 btn-group">
+                <button
+                  type="submit"
+                  className="btn btn-success"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                  ) : null}
+                  Sign In
+                </button>
 
-            <div className="text-center mt-3">
-              <Link
-                href="/user/forgot-password"
-                className="text-decoration-none"
-              >
-                Forgot password?
-              </Link>
-            </div>
-          </Form>
-        )}
-      </Formik>
-    </div>
+                <Link
+                  href="/user/signupp"
+                  className="btn btn-outline-primary"
+                >
+                  Create Account
+                </Link>
+              </div>
+
+              <div className="text-center mt-3">
+                <Link
+                  href="/user/forgot-password"
+                  className="forgot-password"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      </div>
+    </>
   );
 };
 

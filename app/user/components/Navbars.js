@@ -17,7 +17,7 @@ import { MdLightMode } from "react-icons/md";
 import Searchbar from "./Searchbar";
 import { useSelector, useDispatch, shallowEqual } from "react-redux";
 import Cookies from "js-cookie";
-import { cartActions } from "@/app/api/redux/cartSlice"; 
+import { cartActions } from "@/app/api/redux/cartSlice";
 
 const DropdownContent = memo(({ items }) => (
   <div className="d-md-flex">
@@ -81,18 +81,18 @@ function Navbars() {
   );
 
   useEffect(() => {
-    const session = Cookies.get("Data");
-    let email = "guest"; 
+    const session = Cookies.get("Data") || Cookies.get("Admin");
+    let email = "guest";
     if (session) {
       try {
         const parsedSession = JSON.parse(session);
-        email = parsedSession.email || "guest"; 
+        email = parsedSession.email || "guest";
       } catch (error) {
         console.warn(
           "Session is not valid JSON, treating as plain string:",
           session
         );
-        email = session; 
+        email = session;
       }
     }
     dispatch(cartActions.initializeCart({ email }));
@@ -125,10 +125,12 @@ function Navbars() {
   }, []);
 
   const handleLogout = useCallback(() => {
-    localStorage.clear();
-    setSessionData(null);
-    dispatch(cartActions.clearCart());
-    router.push("/");
+    Cookies.remove("Data"); // Clear user cookie
+    Cookies.remove("Admin"); // Clear admin cookie
+    localStorage.clear(); // Clear localStorage
+    dispatch(cartActions.clearCart()); // Clear Redux cart state
+    setSessionData(null); // Update local state
+    router.push("/"); // Redirect to home
   }, [router, dispatch]);
 
   const dropdownItems = useMemo(
@@ -136,8 +138,8 @@ function Navbars() {
       [
         {
           href: "/admin/adminproductsdetails",
-          title: "Admin products Details",
-          description: "Start selling products",
+          title: "Admin Products Details",
+          description: "Manage your products",
         },
       ],
     ],

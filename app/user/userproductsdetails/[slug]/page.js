@@ -68,7 +68,7 @@ export default function ProductDetailPage() {
       showToast("Please Login", "error");
       setInterval(() => {
         router.push("/user/signin");
-      }, 1500);
+      }, 1000);
     }
   }, [globalData, router, productId, dispatch]);
 
