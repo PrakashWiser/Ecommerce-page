@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, memo, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -15,8 +15,10 @@ import { FiShoppingCart, FiMoon } from "react-icons/fi";
 import { TbSkateboard } from "react-icons/tb";
 import { MdLightMode } from "react-icons/md";
 import Searchbar from "./Searchbar";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch, shallowEqual } from "react-redux";
 import Cookies from "js-cookie";
+import { cartActions } from "@/app/api/redux/cartSlice"; 
+
 const DropdownContent = memo(({ items }) => (
   <div className="d-md-flex">
     {items.map((section, index) => (
@@ -40,52 +42,110 @@ const DropdownContent = memo(({ items }) => (
 ));
 DropdownContent.displayName = "DropdownContent";
 
+const CartIcon = memo(({ quantity, onClick }) => (
+  <span className="position-relative">
+    <FiShoppingCart
+      style={{ cursor: "pointer" }}
+      aria-label="Shopping Cart"
+      size={24}
+      onClick={onClick}
+    />
+    {quantity > 0 && (
+      <span
+        className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-white"
+        style={{ fontSize: "0.75rem", padding: "0.2em 0.6em" }}
+      >
+        {quantity}
+      </span>
+    )}
+  </span>
+));
+CartIcon.displayName = "CartIcon";
+
+const ThemeToggle = memo(({ theme, toggleTheme }) => (
+  <Nav.Link className="my-2 my-md-0" onClick={toggleTheme}>
+    {theme === "light" ? <MdLightMode size={24} /> : <FiMoon size={24} />}
+  </Nav.Link>
+));
+ThemeToggle.displayName = "ThemeToggle";
+
 function Navbars() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [theme, setTheme] = useState("light");
   const [sessionData, setSessionData] = useState(null);
-  const [cartQuantity, setCartQuantity] = useState(0);
-  const cartLength = useSelector((state) => state.cart.cartItems.length);
-  console.log(cartQuantity);
+
+  const cartQuantity = useSelector(
+    (state) => state.cart?.cartItems?.length || 0,
+    shallowEqual
+  );
+
+  useEffect(() => {
+    const session = Cookies.get("Data");
+    let email = "guest"; 
+    if (session) {
+      try {
+        const parsedSession = JSON.parse(session);
+        email = parsedSession.email || "guest"; 
+      } catch (error) {
+        console.warn(
+          "Session is not valid JSON, treating as plain string:",
+          session
+        );
+        email = session; 
+      }
+    }
+    dispatch(cartActions.initializeCart({ email }));
+    setSessionData(session);
+  }, [dispatch]);
+
+  useEffect(() => {
+    console.log("Cart quantity updated:", cartQuantity);
+  }, [cartQuantity]);
+
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
-    const session = Cookies.get("Data");
-
     if (storedTheme) {
       setTheme(storedTheme);
       document.body.classList.toggle("dark-mode", storedTheme === "dark");
     }
-    if (session) {
-      setSessionData(session);
-    }
   }, []);
 
   useEffect(() => {
-    if (cartLength) {
-      setCartQuantity(cartLength || 0);
-    }
     localStorage.setItem("theme", theme);
     document.body.classList.toggle("dark-mode", theme === "dark");
-  }, [theme, cartLength]);
+  }, [theme]);
 
-  const handleLogout = () => {
+  const handleCartClick = useCallback(() => {
+    router.push("/user/usershopcollection");
+  }, [router]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  }, []);
+
+  const handleLogout = useCallback(() => {
     localStorage.clear();
     setSessionData(null);
+    dispatch(cartActions.clearCart());
     router.push("/");
-  };
+  }, [router, dispatch]);
 
-  const dropdownItems = [
-    [
-      {
-        href: "/admin/adminproductsdetails",
-        title: "Admin products Details",
-        description: "Start selling products",
-      },
+  const dropdownItems = useMemo(
+    () => [
+      [
+        {
+          href: "/admin/adminproductsdetails",
+          title: "Admin products Details",
+          description: "Start selling products",
+        },
+      ],
     ],
-  ];
+    []
+  );
 
   return (
-    <Navbar expand="lg" className="bg-body-tertiary navbar  text_black">
+    <Navbar expand="lg" className="bg-body-tertiary navbar text_black">
       <Container fluid>
         <Navbar.Brand className="fw600 d-flex gap-2" href="/">
           <TbSkateboard aria-label="Logo" />
@@ -104,40 +164,17 @@ function Navbars() {
                 id="navbarScrollingDropdown"
                 className="text-lg-center"
               >
-                <DropdownContent items={dropdownItems} />
+                <DropdownContent
+                  className="text-center"
+                  items={dropdownItems}
+                />
               </NavDropdown>
             )}
           </Nav>
-          <Form className="d-md-flex  align-items-center gap-4 my-3 my-lg-0">
+          <Form className="d-md-flex align-items-center gap-4 my-3 my-lg-0">
             <Searchbar />
-            <span className="position-relative">
-              <FiShoppingCart
-                style={{ cursor: "pointer" }}
-                aria-label="Shopping Cart"
-                size={24}
-                onClick={() => router.push("/user/usershopcollection")}
-              />
-              {cartQuantity >= 0 && (
-                <span
-                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-white"
-                  style={{ fontSize: "0.75rem", padding: "0.2em 0.6em" }}
-                >
-                  {cartQuantity}
-                </span>
-              )}
-            </span>
-            <Nav.Link
-            className="my-2 my-md-0"
-              onClick={() =>
-                setTheme((prev) => (prev === "light" ? "dark" : "light"))
-              }
-            >
-              {theme === "light" ? (
-                <MdLightMode size={24} />
-              ) : (
-                <FiMoon size={24} />
-              )}
-            </Nav.Link>
+            <CartIcon quantity={cartQuantity} onClick={handleCartClick} />
+            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
             {!sessionData ? (
               <Link
                 href="/user/signin"
@@ -157,4 +194,4 @@ function Navbars() {
   );
 }
 
-export default Navbars;
+export default memo(Navbars);

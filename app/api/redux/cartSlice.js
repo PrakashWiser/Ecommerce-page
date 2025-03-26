@@ -1,3 +1,4 @@
+// cartSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const getCartKey = (email) => (email ? `cart_${email}` : "cart_guest");
@@ -10,6 +11,8 @@ const initialState = {
   lastError: null,
 };
 
+const MAX_QUANTITY = 10;
+
 const loadCart = (email) => {
   if (typeof window === "undefined") return initialState;
   try {
@@ -17,7 +20,7 @@ const loadCart = (email) => {
     const savedCart = localStorage.getItem(key);
     return savedCart ? JSON.parse(savedCart) : initialState;
   } catch (error) {
-    console.error('Failed to load cart:', error);
+    console.error("Failed to load cart:", error);
     return { ...initialState, lastError: error.message };
   }
 };
@@ -34,7 +37,7 @@ const saveToLocalStorage = (state) => {
     localStorage.setItem(key, JSON.stringify(dataToSave));
     return true;
   } catch (error) {
-    console.error('Failed to save cart:', error);
+    console.error("Failed to save cart:", error);
     return false;
   }
 };
@@ -46,7 +49,7 @@ const cartSlice = createSlice({
     initializeCart(state, action) {
       const { email } = action.payload || {};
       if (!email) {
-        state.lastError = 'Email required for cart initialization';
+        state.lastError = "Email required for cart initialization";
         return state;
       }
       const loadedCart = loadCart(email);
@@ -59,9 +62,9 @@ const cartSlice = createSlice({
     },
     addCart(state, action) {
       const { newItem } = action.payload || {};
-      
+
       if (!newItem?.id || !newItem?.price) {
-        state.lastError = 'Invalid item: must have id and price';
+        state.lastError = "Invalid item: must have id and price";
         console.error(state.lastError);
         return state;
       }
@@ -69,21 +72,25 @@ const cartSlice = createSlice({
       const existingItem = state.cartItems.find(
         (item) => item.id === newItem.id
       );
-
-      const quantityToAdd = Math.max(1, newItem.quantity || 1);
+      const quantityToAdd = Math.max(
+        1,
+        Math.min(newItem.quantity || 1, MAX_QUANTITY)
+      );
 
       if (existingItem) {
-        existingItem.quantity += quantityToAdd;
+        const newQuantity = Math.min(
+          existingItem.quantity + quantityToAdd,
+          MAX_QUANTITY
+        );
+        existingItem.quantity = newQuantity;
         existingItem.totalPrice = parseFloat(
-          (existingItem.price * existingItem.quantity).toFixed(2)
+          (existingItem.price * newQuantity).toFixed(2)
         );
       } else {
         state.cartItems.push({
           ...newItem,
           quantity: quantityToAdd,
-          totalPrice: parseFloat(
-            (newItem.price * quantityToAdd).toFixed(2)
-          ),
+          totalPrice: parseFloat((newItem.price * quantityToAdd).toFixed(2)),
         });
       }
       state.totalQuantity += quantityToAdd;
@@ -106,10 +113,14 @@ const cartSlice = createSlice({
       const existingItem = state.cartItems.find((item) => item.id === id);
 
       if (existingItem && newQuantity >= 0) {
-        const quantityDifference = newQuantity - existingItem.quantity;
-        existingItem.quantity = newQuantity;
+        const validatedQuantity = Math.min(
+          Math.max(0, newQuantity),
+          MAX_QUANTITY
+        );
+        const quantityDifference = validatedQuantity - existingItem.quantity;
+        existingItem.quantity = validatedQuantity;
         existingItem.totalPrice = parseFloat(
-          (existingItem.price * newQuantity).toFixed(2)
+          (existingItem.price * validatedQuantity).toFixed(2)
         );
         state.totalQuantity += quantityDifference;
         state.lastError = null;
@@ -131,7 +142,7 @@ const cartSlice = createSlice({
 
 const cartMiddleware = (store) => (next) => (action) => {
   const result = next(action);
-  console.log('Cart Action:', action.type, 'State:', store.getState().cart);
+  console.log("Cart Action:", action.type, "State:", store.getState().cart);
   return result;
 };
 

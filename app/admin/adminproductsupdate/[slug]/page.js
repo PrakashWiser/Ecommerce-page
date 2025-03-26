@@ -14,7 +14,7 @@ const UpdatePro = ({ params }) => {
     price: "",
     description: "",
     image: "",
-    listingType: "others"
+    listingType: "others",
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,12 +28,14 @@ const UpdatePro = ({ params }) => {
           `https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products/${value}`
         );
         const product = response.data;
+        console.log(product);
+        
         setFormData({
           name: product.name,
-          price: product.price,
-          description: product.discription || "",
+          price: product.price.replace(/[^0-9]/g, ""),
+          description: product.description || product.discription || "",
           image: product.image,
-          listingType: product.listingType || "others"
+          listingType: product.listingType || "others",
         });
       } catch (err) {
         setError("Failed to fetch product details");
@@ -49,12 +51,12 @@ const UpdatePro = ({ params }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       const updatedProduct = {
         ...formData,
         discription: formData.description,
-        image: imagePreview || formData.image
+        image: imagePreview || formData.image,
       };
 
       await axios.put(
@@ -85,13 +87,14 @@ const UpdatePro = ({ params }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  const Giturl = "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
+  const Giturl =
+    "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
 
   if (isLoading) {
     return (
@@ -115,8 +118,8 @@ const UpdatePro = ({ params }) => {
 
   return (
     <Container className="py-5">
-      <Button 
-        variant="outline-secondary" 
+      <Button
+        variant="outline-secondary"
         onClick={() => router.back()}
         className="mb-4"
       >
@@ -127,7 +130,7 @@ const UpdatePro = ({ params }) => {
       <Card className="border-0 shadow-sm">
         <Card.Body className="p-4">
           <h2 className="mb-4">Update Product</h2>
-          
+
           <Form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-md-6">
@@ -142,7 +145,7 @@ const UpdatePro = ({ params }) => {
                           width={300}
                           height={200}
                           className="img-fluid rounded"
-                          style={{ objectFit: 'contain', maxHeight: '200px' }}
+                          style={{ objectFit: "contain", maxHeight: "200px" }}
                         />
                       ) : formData.image ? (
                         <Image
@@ -151,15 +154,15 @@ const UpdatePro = ({ params }) => {
                           width={300}
                           height={200}
                           className="img-fluid rounded"
-                          style={{ objectFit: 'contain', maxHeight: '200px' }}
+                          style={{ objectFit: "contain", maxHeight: "200px" }}
                         />
                       ) : (
                         <div className="py-5 text-muted">No image selected</div>
                       )}
                     </div>
                     <div>
-                      <Form.Label 
-                        htmlFor="image-upload" 
+                      <Form.Label
+                        htmlFor="image-upload"
                         className="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2"
                       >
                         <FiUpload /> Upload New Image
@@ -231,15 +234,12 @@ const UpdatePro = ({ params }) => {
             </Form.Group>
 
             <div className="d-flex justify-content-end gap-3">
-              <Button 
-                variant="outline-secondary" 
-                onClick={() => router.back()}
-              >
+              <Button variant="outline-secondary" onClick={() => router.back()}>
                 Cancel
               </Button>
-              <Button 
-                variant="primary" 
-                type="submit" 
+              <Button
+                variant="primary"
+                type="submit"
                 disabled={isSubmitting}
                 className="d-flex align-items-center gap-2"
               >

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import homebBanner from "./assets/images/home-banner.webp";
@@ -18,7 +18,6 @@ import { motion } from "framer-motion";
 
 export default function Home() {
   const [APIData, setAPIData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [value, setValue] = useState("all");
   const router = useRouter();
@@ -28,33 +27,14 @@ export default function Home() {
     "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
 
   useEffect(() => {
-    if (data) {
+    if (data && data.length > 0) {
       setAPIData(data);
     }
   }, [data]);
 
-  useEffect(() => {
-    const filterData = () => {
-      if (value === "all") {
-        setFilteredData(APIData);
-      } else {
-        const filtered = APIData.filter((item) => item.listingType === value);
-        setFilteredData(filtered);
-      }
-    };
-
-    filterData();
-
-    const interval = setInterval(() => {
-      setFilteredData((prevData) => {
-        if (prevData.length > 0) {
-          return [...prevData].reverse();
-        }
-        return prevData;
-      });
-    }, 15000);
-
-    return () => clearInterval(interval);
+  const filteredData = useMemo(() => {
+    if (value === "all") return APIData;
+    return APIData.filter((item) => item.listingType === value);
   }, [value, APIData]);
 
   const getCategoryCount = (categoryValue) => {
@@ -230,87 +210,85 @@ export default function Home() {
                 </Link>
               </li>
             </ul>
-              {displayedProducts.length > 0 ? (
-                <Row>
-                  {displayedProducts.map((item) => (
-                    <Col md={6} lg={3} key={item.id} className="mb-4 d-flex">
-                      <motion.div
-                        className="w-100"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.98 }}
+            {displayedProducts.length > 0 ? (
+              <Row>
+                {displayedProducts.map((item) => (
+                  <Col md={6} lg={3} key={item.id} className="mb-4 d-flex">
+                    <motion.div
+                      className="w-100"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Card
+                        className="shadow h-100"
+                        onClick={() => handleProductClick(item.id)}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          cursor: "pointer",
+                        }}
                       >
-                        <Card
-                          className="shadow h-100"
-                          onClick={() => handleProductClick(item.id)}
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            cursor: "pointer",
-                          }}
-                        >
-                          <div style={{ height: "200px", overflow: "hidden" }}>
-                            <Card.Img
-                              variant="top"
-                              src={Giturl + item.image}
-                              alt={item.name}
-                              className="img_details w-100 h-100"
-                              style={{ objectFit: "cover" }}
-                            />
-                          </div>
-                          <Card.Body className="d-flex flex-column">
-                            <Card.Title className="flex-grow-0">
-                              {item.name}
-                            </Card.Title>
-                            <Card.Text
-                              className="flex-grow-1"
-                              style={{
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: "vertical",
-                              }}
+                        <div style={{ height: "200px", overflow: "hidden" }}>
+                          <Card.Img
+                            variant="top"
+                            src={Giturl + item.image}
+                            alt={item.name}
+                            className="img_details w-100 h-100"
+                            style={{ objectFit: "cover" }}
+                          />
+                        </div>
+                        <Card.Body className="d-flex flex-column">
+                          <Card.Title className="flex-grow-0">
+                            {item.name}
+                          </Card.Title>
+                          <Card.Text
+                            className="flex-grow-1"
+                            style={{
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: "vertical",
+                            }}
+                          >
+                            {item.discription || ""}
+                          </Card.Text>
+                          <Card.Footer className="border-0 bg-white d-flex justify-content-between align-items-center p-0 pt-2">
+                            <small className="text-muted">${item.price}</small>
+                            <motion.button
+                              className="border-0 bg-transparent p-0"
+                              whileHover={{ scale: 1.2 }}
+                              whileTap={{ scale: 0.9 }}
                             >
-                              {item.discription || ""}
-                            </Card.Text>
-                            <Card.Footer className="border-0 bg-white d-flex justify-content-between align-items-center p-0 pt-2">
-                              <small className="text-muted">
-                                ${item.price}
-                              </small>
-                              <motion.button
-                                className="border-0 bg-transparent p-0"
-                                whileHover={{ scale: 1.2 }}
-                                whileTap={{ scale: 0.9 }}
-                              >
-                                <PiShoppingCart size={20} />
-                              </motion.button>
-                            </Card.Footer>
-                          </Card.Body>
-                        </Card>
-                      </motion.div>
-                    </Col>
-                  ))}
-                </Row>
-              ) : (
-                <motion.div
-                  className="text-center w-100"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <Image
-                    src={Embty}
-                    alt="No Data"
-                    width={300}
-                    height={200}
-                    style={{ margin: "20px auto" }}
-                  />
-                  <p>No products available</p>
-                </motion.div>
-              )}
+                              <PiShoppingCart size={20} />
+                            </motion.button>
+                          </Card.Footer>
+                        </Card.Body>
+                      </Card>
+                    </motion.div>
+                  </Col>
+                ))}
+              </Row>
+            ) : (
+              <motion.div
+                className="text-center w-100"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Image
+                  src={Embty}
+                  alt="No Data"
+                  width={300}
+                  height={200}
+                  style={{ margin: "20px auto" }}
+                />
+                <p>No products available</p>
+              </motion.div>
+            )}
             {!showAllProducts && filteredData.length > 8 && (
               <div className="d-flex justify-content-center mt-4">
                 <button

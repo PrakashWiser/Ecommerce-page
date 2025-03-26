@@ -18,7 +18,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { FiEdit2, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
-
+import Empty from "@/app/assets/images/no-found.jpg";
 const Product = () => {
   const router = useRouter();
   const [APIData, setAPIData] = useState([]);
@@ -96,7 +96,7 @@ const Product = () => {
                 {APIData.length} products available
               </p>
             </div>
-            <div className="d-flex flex-column flex-md-row gap-3 w-100 w-md-auto">
+            <div className="d-flex flex-column flex-md-row gap-3 w-50 w-md-auto">
               <InputGroup className="mb-2 mb-md-0">
                 <InputGroup.Text>
                   <FiSearch />
@@ -110,14 +110,13 @@ const Product = () => {
               <Link href="/admin/addproducts" passHref legacyBehavior>
                 <Button
                   variant="primary"
-                  className="d-flex align-items-center gap-2"
+                  className="d-flex align-items-center gap-2 px-3 text-white"
                 >
                   <FiPlus /> Add Product
                 </Button>
               </Link>
             </div>
           </div>
-
           {filteredProducts.length > 0 ? (
             <div className="table-responsive">
               <Table hover className="mb-0">
@@ -193,10 +192,10 @@ const Product = () => {
           ) : (
             <div className="text-center py-5">
               <Image
-                src="/images/empty-state.svg"
+                src={Empty}
                 alt="No products"
-                width={200}
-                height={200}
+                width={500}
+                height={500}
                 className="img-fluid mb-4"
               />
               <h5 className="mb-2">No products found</h5>

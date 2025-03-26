@@ -1,7 +1,8 @@
+// ProductDetailPage.js
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import MainLayout from "@/app/Layout/MainLayout";
-import { Container, Row, Col, Button, Badge, Spinner } from "react-bootstrap";
+import { Container, Row, Col, Button, Badge } from "react-bootstrap";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Navbars from "@/app/user/components/Navbars";
 import { RiDeleteBin5Line } from "react-icons/ri";
@@ -17,6 +18,15 @@ import Image from "next/image";
 import Notfound from "@/app/assets/images/no-found.jpg";
 import Link from "next/link";
 
+// Debounce function
+const debounce = (func, wait) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
 const cleanPrice = (price) => {
   if (typeof price === "string") {
     return parseFloat(price.replace(/[^0-9.]/g, ""));
@@ -26,6 +36,7 @@ const cleanPrice = (price) => {
 
 const Giturl =
   "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
+const MAX_QUANTITY = 10;
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -64,41 +75,59 @@ export default function ProductDetailPage() {
     }
   }, [globalData, router, productId, initializeCart]);
 
-  const handleAddToCart = useCallback(() => {
-    if (!product?.price) {
-      showToast("Item price is missing!", "error");
-      return;
-    }
+  const handleAddToCart = useCallback(
+    debounce(() => {
+      if (!product?.price) {
+        showToast("Item price is missing!", "error");
+        return;
+      }
 
-    const userEmail = Cookies.get("Data") || "guest";
-    const price = cleanPrice(product.price);
-    const existingItem = cartItems.find((item) => item.id === product.id);
+      const price = cleanPrice(product.price);
+      const existingItem = cartItems.find((item) => item.id === product.id);
 
-    if (existingItem) {
-      dispatch(
-        cartActions.updateQuantity({
-          // Changed to updateQuantity
-          id: product.id,
-          newQuantity: existingItem.quantity + quantity,
-        })
-      );
-      showToast(`${quantity} more ${product.name} added to cart`, "success");
-    } else {
-      const item = {
-        ...product,
-        price: price,
-        quantity: quantity,
-        totalPrice: price * quantity,
-      };
-      dispatch(
-        cartActions.addCart({
-          newItem: item,
-        })
-      );
-      showToast(`${quantity} ${product.name} added to cart`, "success");
-    }
-    setQuantity(1);
-  }, [product, cartItems, dispatch, quantity]);
+      try {
+        if (existingItem) {
+          const newQuantity = existingItem.quantity + quantity;
+          if (newQuantity > MAX_QUANTITY) {
+            showToast(`Maximum quantity (${MAX_QUANTITY}) reached`, "error");
+            return;
+          }
+          dispatch(
+            cartActions.updateQuantity({
+              id: product.id,
+              newQuantity: newQuantity,
+            })
+          );
+          showToast(
+            `${quantity} more ${product.name} added to cart`,
+            "success"
+          );
+        } else {
+          if (quantity > MAX_QUANTITY) {
+            showToast(`Maximum quantity (${MAX_QUANTITY}) allowed`, "error");
+            return;
+          }
+          const item = {
+            ...product,
+            price: price,
+            quantity: quantity,
+            totalPrice: price * quantity,
+          };
+          dispatch(
+            cartActions.addCart({
+              newItem: item,
+            })
+          );
+          showToast(`${quantity} ${product.name} added to cart`, "success");
+        }
+        setQuantity(1);
+      } catch (error) {
+        showToast("Failed to update cart", "error");
+        console.error("Add to cart error:", error);
+      }
+    }, 300),
+    [product, cartItems, dispatch, quantity]
+  );
 
   const handleBuyNow = useCallback(() => {
     handleAddToCart();
@@ -107,12 +136,17 @@ export default function ProductDetailPage() {
 
   const handleRemoveFromCart = useCallback(
     (itemId) => {
-      dispatch(
-        cartActions.removeCart({
-          itemId: itemId,
-        })
-      );
-      showToast("Item removed from cart!", "success");
+      try {
+        dispatch(
+          cartActions.removeCart({
+            itemId: itemId,
+          })
+        );
+        showToast("Item removed from cart!", "success");
+      } catch (error) {
+        showToast("Failed to remove item", "error");
+        console.error("Remove from cart error:", error);
+      }
     },
     [dispatch]
   );
@@ -129,14 +163,13 @@ export default function ProductDetailPage() {
       .toFixed(2);
   }, [cartItems]);
 
-  const increaseQuantity = useCallback(
-    () => setQuantity((prev) => prev + 1),
-    []
-  );
-  const decreaseQuantity = useCallback(
-    () => setQuantity((prev) => Math.max(1, prev - 1)),
-    []
-  );
+  const increaseQuantity = useCallback(() => {
+    setQuantity((prev) => Math.min(prev + 1, MAX_QUANTITY));
+  }, []);
+
+  const decreaseQuantity = useCallback(() => {
+    setQuantity((prev) => Math.max(1, prev - 1));
+  }, []);
 
   if (loading || globalLoading) {
     return <Loader />;
@@ -159,8 +192,8 @@ export default function ProductDetailPage() {
               />
               <h3 className="mt-4">Product Not Found</h3>
               <p className="text-muted mb-4">
-                The product you&apos;re looking for doesn&apos;t exist or has
-                been removed.
+                The product you're looking for doesn't exist or has been
+                removed.
               </p>
               <Button
                 variant="primary"
