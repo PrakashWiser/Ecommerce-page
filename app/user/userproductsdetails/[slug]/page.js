@@ -1,6 +1,5 @@
-// ProductDetailPage.js
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "@/app/Layout/MainLayout";
 import { Container, Row, Col, Button, Badge } from "react-bootstrap";
 import Offcanvas from "react-bootstrap/Offcanvas";
@@ -50,13 +49,10 @@ export default function ProductDetailPage() {
   const { cartItems, showCart } = useSelector((state) => state.cart);
   const { data: globalData, loading: globalLoading } = useGlobalContext();
 
-  const initializeCart = useCallback(() => {
+  useEffect(() => {
+    // Inline initializeCart
     const userEmail = Cookies.get("Data") || "guest";
     dispatch(cartActions.initializeCart({ email: userEmail }));
-  }, [dispatch]);
-
-  useEffect(() => {
-    initializeCart();
 
     if (!productId) {
       setLoading(false);
@@ -73,103 +69,94 @@ export default function ProductDetailPage() {
     if (!userData) {
       router.push("/user/signin");
     }
-  }, [globalData, router, productId, initializeCart]);
+  }, [globalData, router, productId, dispatch]);
 
-  const handleAddToCart = useCallback(
-    debounce(() => {
-      if (!product?.price) {
-        showToast("Item price is missing!", "error");
-        return;
-      }
+  const handleAddToCart = debounce(() => {
+    if (!product?.price) {
+      showToast("Item price is missing!", "error");
+      return;
+    }
 
-      const price = cleanPrice(product.price);
-      const existingItem = cartItems.find((item) => item.id === product.id);
+    const price = cleanPrice(product.price);
+    const existingItem = cartItems.find((item) => item.id === product.id);
 
-      try {
-        if (existingItem) {
-          const newQuantity = existingItem.quantity + quantity;
-          if (newQuantity > MAX_QUANTITY) {
-            showToast(`Maximum quantity (${MAX_QUANTITY}) reached`, "error");
-            return;
-          }
-          dispatch(
-            cartActions.updateQuantity({
-              id: product.id,
-              newQuantity: newQuantity,
-            })
-          );
-          showToast(
-            `${quantity} more ${product.name} added to cart`,
-            "success"
-          );
-        } else {
-          if (quantity > MAX_QUANTITY) {
-            showToast(`Maximum quantity (${MAX_QUANTITY}) allowed`, "error");
-            return;
-          }
-          const item = {
-            ...product,
-            price: price,
-            quantity: quantity,
-            totalPrice: price * quantity,
-          };
-          dispatch(
-            cartActions.addCart({
-              newItem: item,
-            })
-          );
-          showToast(`${quantity} ${product.name} added to cart`, "success");
+    try {
+      if (existingItem) {
+        const newQuantity = existingItem.quantity + quantity;
+        if (newQuantity > MAX_QUANTITY) {
+          showToast(`Maximum quantity (${MAX_QUANTITY}) reached`, "error");
+          return;
         }
-        setQuantity(1);
-      } catch (error) {
-        showToast("Failed to update cart", "error");
-        console.error("Add to cart error:", error);
-      }
-    }, 300),
-    [product, cartItems, dispatch, quantity]
-  );
-
-  const handleBuyNow = useCallback(() => {
-    handleAddToCart();
-    dispatch(cartActions.toggleCart());
-  }, [handleAddToCart, dispatch]);
-
-  const handleRemoveFromCart = useCallback(
-    (itemId) => {
-      try {
         dispatch(
-          cartActions.removeCart({
-            itemId: itemId,
+          cartActions.updateQuantity({
+            id: product.id,
+            newQuantity: newQuantity,
           })
         );
-        showToast("Item removed from cart!", "success");
-      } catch (error) {
-        showToast("Failed to remove item", "error");
-        console.error("Remove from cart error:", error);
+        showToast(`${quantity} more ${product.name} added to cart`, "success");
+      } else {
+        if (quantity > MAX_QUANTITY) {
+          showToast(`Maximum quantity (${MAX_QUANTITY}) allowed`, "error");
+          return;
+        }
+        const item = {
+          ...product,
+          price: price,
+          quantity: quantity,
+          totalPrice: price * quantity,
+        };
+        dispatch(
+          cartActions.addCart({
+            newItem: item,
+          })
+        );
+        showToast(`${quantity} ${product.name} added to cart`, "success");
       }
-    },
-    [dispatch]
-  );
+      setQuantity(1);
+    } catch (error) {
+      showToast("Failed to update cart", "error");
+      console.error("Add to cart error:", error);
+    }
+  }, 300);
 
-  const toggleCart = useCallback(() => {
+  const handleBuyNow = () => {
+    handleAddToCart();
     dispatch(cartActions.toggleCart());
-  }, [dispatch]);
+  };
 
-  const calculateTotal = useCallback(() => {
+  const handleRemoveFromCart = (itemId) => {
+    try {
+      dispatch(
+        cartActions.removeCart({
+          itemId: itemId,
+        })
+      );
+      showToast("Item removed from cart!", "success");
+    } catch (error) {
+      showToast("Failed to remove item", "error");
+      console.error("Remove from cart error:", error);
+    }
+  };
+
+  const toggleCart = () => {
+    dispatch(cartActions.toggleCart());
+  };
+
+  const calculateTotal = () => {
     return cartItems
       .reduce((total, item) => {
         return total + cleanPrice(item.price) * item.quantity;
       }, 0)
       .toFixed(2);
-  }, [cartItems]);
+  };
 
-  const increaseQuantity = useCallback(() => {
+  const increaseQuantity = () => {
     setQuantity((prev) => Math.min(prev + 1, MAX_QUANTITY));
-  }, []);
+  };
 
-  const decreaseQuantity = useCallback(() => {
+  const decreaseQuantity = () => {
     setQuantity((prev) => Math.max(1, prev - 1));
-  }, []);
+  };
 
   if (loading || globalLoading) {
     return <Loader />;
@@ -192,7 +179,7 @@ export default function ProductDetailPage() {
               />
               <h3 className="mt-4">Product Not Found</h3>
               <p className="text-muted mb-4">
-                The product you're looking for doesn't exist or has been
+                The product you\'re looking for doesn\'t exist or has been
                 removed.
               </p>
               <Button

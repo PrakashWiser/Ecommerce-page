@@ -194,7 +194,6 @@ export default function Home() {
           </Container>
         </div>
       </section>
-
       <section>
         <Container>
           <div className="home_sec_three my-5">
