@@ -1,183 +1,263 @@
 "use client";
-"use strict";
-import React, { useEffect, useState, use } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Container } from "react-bootstrap";
+import { Container, Card, Spinner, Alert, Form, Button } from "react-bootstrap";
+import Image from "next/image";
+import { FiArrowLeft, FiSave, FiUpload } from "react-icons/fi";
 
 const UpdatePro = ({ params }) => {
-  const { slug: value } = use(params);
+  const { slug: value } = params;
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
-  const [discription, setDiscription] = useState("");
-  const [image, setImage] = useState("");
-  const [listingType, setListingType] = useState("others");
-  const [imageData, setImageData] = useState(null);
-  useEffect(() => {
-    axios
-      .get(`https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products`)
-      .then((getData) => {
-        let data = getData.data;
-        let filter = data.filter((items) => items.id == value);
-        if (filter.length > 0) {
-          setName(filter[0].name);
-          setPrice(filter[0].price);
-          setDiscription(filter[0].discription);
-          setImage(filter[0].image);
-          setListingType(filter[0].listingType);
-        }
-      });
-  }, []);
+  const [formData, setFormData] = useState({
+    name: "",
+    price: "",
+    description: "",
+    image: "",
+    listingType: "others"
+  });
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const updatedProduct = {
-      name,
-      price,
-      discription,
-      image: imageData ? imageData : image,
-      listingType,
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await axios.get(
+          `https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products/${value}`
+        );
+        const product = response.data;
+        setFormData({
+          name: product.name,
+          price: product.price,
+          description: product.discription || "",
+          image: product.image,
+          listingType: product.listingType || "others"
+        });
+      } catch (err) {
+        setError("Failed to fetch product details");
+        console.error("Error fetching product:", err);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    axios
-      .put(
+
+    fetchProduct();
+  }, [value]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const updatedProduct = {
+        ...formData,
+        discription: formData.description,
+        image: imagePreview || formData.image
+      };
+
+      await axios.put(
         `https://67446e69b4e2e04abea22dd9.mockapi.io/wiser-products/${value}`,
         updatedProduct
-      )
-      .then(() => {
-        setName("");
-        setPrice("");
-        setDiscription("");
-        setImage("");
-        setListingType("others");
-        setImageData(null);
-        router.push("/admin/adminproductsdetails");
-      })
-      .catch((error) => {
-        console.error("Error updating product:", error);
-      });
+      );
+
+      showToast("Product updated successfully", "success");
+      router.push("/admin/adminproductsdetails");
+    } catch (err) {
+      setError("Failed to update product");
+      console.error("Error updating product:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      setImageData(reader.result);
-    };
-
     if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
       reader.readAsDataURL(file);
     }
   };
 
-  const Giturl =
-    "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const Giturl = "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
+
+  if (isLoading) {
+    return (
+      <Container className="d-flex justify-content-center align-items-center min-vh-100">
+        <Spinner animation="border" variant="primary" />
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container className="py-5">
+        <Alert variant="danger">{error}</Alert>
+        <Button variant="secondary" onClick={() => router.back()}>
+          <FiArrowLeft className="me-2" />
+          Go Back
+        </Button>
+      </Container>
+    );
+  }
 
   return (
-    <Container>
-      <div className="  vh-100 d-flex flex-column justify-content-center align-items-center">
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <h2 className="mt-3 mb-4">Update Product</h2>
-        </div>
-        <form className="width_tybe" onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label htmlFor="image" className="form-label">
-              Image
-            </label>
-            <input
-              type="file"
-              className="form-control"
-              id="image"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-          </div>
-          {imageData ? (
-            <img
-              src={imageData}
-              alt="Selected"
-              className="img-fluid mb-3"
-              style={{ maxWidth: "200px" }}
-            />
-          ) : image ? (
-            <img
-              src={Giturl + image}
-              alt="Current"
-              className="img-fluid mb-3"
-              style={{ maxWidth: "200px" }}
-            />
-          ) : null}
+    <Container className="py-5">
+      <Button 
+        variant="outline-secondary" 
+        onClick={() => router.back()}
+        className="mb-4"
+      >
+        <FiArrowLeft className="me-2" />
+        Back to Products
+      </Button>
 
-          <div className="mb-3">
-            <label htmlFor="name" className="form-label">
-              Name
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
+      <Card className="border-0 shadow-sm">
+        <Card.Body className="p-4">
+          <h2 className="mb-4">Update Product</h2>
+          
+          <Form onSubmit={handleSubmit}>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-4">
+                  <Form.Label>Product Image</Form.Label>
+                  <div className="d-flex flex-column gap-3">
+                    <div className="border rounded p-3 text-center">
+                      {imagePreview ? (
+                        <Image
+                          src={imagePreview}
+                          alt="New Preview"
+                          width={300}
+                          height={200}
+                          className="img-fluid rounded"
+                          style={{ objectFit: 'contain', maxHeight: '200px' }}
+                        />
+                      ) : formData.image ? (
+                        <Image
+                          src={`${Giturl}${formData.image}`}
+                          alt="Current Product"
+                          width={300}
+                          height={200}
+                          className="img-fluid rounded"
+                          style={{ objectFit: 'contain', maxHeight: '200px' }}
+                        />
+                      ) : (
+                        <div className="py-5 text-muted">No image selected</div>
+                      )}
+                    </div>
+                    <div>
+                      <Form.Label 
+                        htmlFor="image-upload" 
+                        className="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2"
+                      >
+                        <FiUpload /> Upload New Image
+                      </Form.Label>
+                      <Form.Control
+                        type="file"
+                        id="image-upload"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="d-none"
+                      />
+                    </div>
+                  </div>
+                </Form.Group>
+              </div>
 
-          <div className="mb-3">
-            <label htmlFor="price" className="form-label">
-              Price
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="price"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              required
-            />
-          </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Product Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
 
-          <div className="mb-3">
-            <label htmlFor="discription" className="form-label">
-              Description
-            </label>
-            <textarea
-              className="form-control"
-              style={{ resize: "none" }}
-              id="discription"
-              rows={5}
-              value={discription}
-              onChange={(e) => setDiscription(e.target.value)}
-              required
-            ></textarea>
-          </div>
+                <Form.Group className="mb-3">
+                  <Form.Label>Price</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
 
-          <div className="mb-3">
-            <label htmlFor="category" className="form-label">
-              Category
-            </label>
-            <select
-              className="form-control"
-              id="category"
-              value={listingType}
-              onChange={(e) => setListingType(e.target.value)}
-              required
-            >
-              <option value="sketeboard">Skateboard</option>
-              <option value="clothing">Clothing</option>
-              <option value="shoe">Shoe</option>
-              <option value="headphone">Headphone</option>
-              <option value="mobile">Mobile</option>
-              <option value="others">Others</option>
-            </select>
-          </div>
+                <Form.Group className="mb-3">
+                  <Form.Label>Category</Form.Label>
+                  <Form.Select
+                    name="listingType"
+                    value={formData.listingType}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="sketeboard">Skateboard</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="shoe">Shoe</option>
+                    <option value="headphone">Headphone</option>
+                    <option value="mobile">Mobile</option>
+                    <option value="others">Others</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
+            </div>
 
-          <button type="submit" className="btn btn-success">
-            Update Product
-          </button>
-        </form>
-      </div>
+            <Form.Group className="mb-4">
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                name="description"
+                rows={5}
+                value={formData.description}
+                onChange={handleChange}
+                style={{ resize: "none" }}
+              />
+            </Form.Group>
+
+            <div className="d-flex justify-content-end gap-3">
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => router.back()}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="primary" 
+                type="submit" 
+                disabled={isSubmitting}
+                className="d-flex align-items-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <FiSave /> Update Product
+                  </>
+                )}
+              </Button>
+            </div>
+          </Form>
+        </Card.Body>
+      </Card>
     </Container>
   );
 };
