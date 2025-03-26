@@ -170,7 +170,8 @@ export default function Home() {
             <ul className="d-lg-flex justify-content-between">
               <li>
                 <p>
-                  Find the best skateboarding gears from stores around the world
+                  Find the world\'s best skateboarding gears from stores around
+                  the world
                 </p>
               </li>
               <li>
@@ -202,7 +203,7 @@ export default function Home() {
             </h2>
             <ul className="d-lg-flex justify-content-between">
               <li>
-                <p>Explore all products we offer from around the world</p>
+                <p>Explore all the world\'s products we offer</p>
               </li>
               <li>
                 <Link href="/usershopcollection" className="primary_color">
