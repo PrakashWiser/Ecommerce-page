@@ -260,7 +260,7 @@ function ShopCollection() {
             />
             <h3 className="mb-3">Your cart is empty</h3>
             <p className="text-muted mb-4">
-              Looks like you haven't added anything to your cart yet
+              Looks like you haven&apos;t added anything to your cart yet
             </p>
             <Button variant="primary" className="text-white" href="/" as={Link}>
               Continue Shopping

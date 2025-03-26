@@ -7,7 +7,7 @@ const initialState = {
   showCart: false,
   totalQuantity: 0,
   currentUserEmail: null,
-  lastError: null, 
+  lastError: null,
 };
 
 const loadCart = (email) => {
@@ -17,7 +17,7 @@ const loadCart = (email) => {
     const savedCart = localStorage.getItem(key);
     return savedCart ? JSON.parse(savedCart) : initialState;
   } catch (error) {
-    console.error("Failed to load cart:", error);
+    console.error('Failed to load cart:', error);
     return { ...initialState, lastError: error.message };
   }
 };
@@ -34,7 +34,7 @@ const saveToLocalStorage = (state) => {
     localStorage.setItem(key, JSON.stringify(dataToSave));
     return true;
   } catch (error) {
-    console.error("Failed to save cart:", error);
+    console.error('Failed to save cart:', error);
     return false;
   }
 };
@@ -46,7 +46,7 @@ const cartSlice = createSlice({
     initializeCart(state, action) {
       const { email } = action.payload || {};
       if (!email) {
-        state.lastError = "Email required for cart initialization";
+        state.lastError = 'Email required for cart initialization';
         return state;
       }
       const loadedCart = loadCart(email);
@@ -59,9 +59,9 @@ const cartSlice = createSlice({
     },
     addCart(state, action) {
       const { newItem } = action.payload || {};
-
+      
       if (!newItem?.id || !newItem?.price) {
-        state.lastError = "Invalid item: must have id and price";
+        state.lastError = 'Invalid item: must have id and price';
         console.error(state.lastError);
         return state;
       }
@@ -81,7 +81,9 @@ const cartSlice = createSlice({
         state.cartItems.push({
           ...newItem,
           quantity: quantityToAdd,
-          totalPrice: parseFloat((newItem.price * quantityToAdd).toFixed(2)),
+          totalPrice: parseFloat(
+            (newItem.price * quantityToAdd).toFixed(2)
+          ),
         });
       }
       state.totalQuantity += quantityToAdd;
@@ -129,7 +131,7 @@ const cartSlice = createSlice({
 
 const cartMiddleware = (store) => (next) => (action) => {
   const result = next(action);
-  console.log("Cart Action:", action.type, "State:", store.getState().cart);
+  console.log('Cart Action:', action.type, 'State:', store.getState().cart);
   return result;
 };
 

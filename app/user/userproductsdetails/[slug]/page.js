@@ -17,7 +17,6 @@ import Image from "next/image";
 import Notfound from "@/app/assets/images/no-found.jpg";
 import Link from "next/link";
 
-// Helper function to clean price
 const cleanPrice = (price) => {
   if (typeof price === "string") {
     return parseFloat(price.replace(/[^0-9.]/g, ""));
@@ -40,13 +39,11 @@ export default function ProductDetailPage() {
   const { cartItems, showCart } = useSelector((state) => state.cart);
   const { data: globalData, loading: globalLoading } = useGlobalContext();
 
-  // Initialize cart on component mount
   const initializeCart = useCallback(() => {
     const userEmail = Cookies.get("Data") || "guest";
     dispatch(cartActions.initializeCart({ email: userEmail }));
   }, [dispatch]);
 
-  // Load product and user data
   useEffect(() => {
     initializeCart();
 
@@ -67,7 +64,6 @@ export default function ProductDetailPage() {
     }
   }, [globalData, router, productId, initializeCart]);
 
-  // Add or update item in cart
   const handleAddToCart = useCallback(() => {
     if (!product?.price) {
       showToast("Item price is missing!", "error");
@@ -80,10 +76,10 @@ export default function ProductDetailPage() {
 
     if (existingItem) {
       dispatch(
-        cartActions.updateCart({
-          itemId: product.id,
-          quantity: existingItem.quantity + quantity,
-          userEmail: userEmail,
+        cartActions.updateQuantity({
+          // Changed to updateQuantity
+          id: product.id,
+          newQuantity: existingItem.quantity + quantity,
         })
       );
       showToast(`${quantity} more ${product.name} added to cart`, "success");
@@ -97,7 +93,6 @@ export default function ProductDetailPage() {
       dispatch(
         cartActions.addCart({
           newItem: item,
-          userEmail: userEmail,
         })
       );
       showToast(`${quantity} ${product.name} added to cart`, "success");
@@ -105,20 +100,16 @@ export default function ProductDetailPage() {
     setQuantity(1);
   }, [product, cartItems, dispatch, quantity]);
 
-  // Buy now: Add to cart and show cart
   const handleBuyNow = useCallback(() => {
     handleAddToCart();
     dispatch(cartActions.toggleCart());
   }, [handleAddToCart, dispatch]);
 
-  // Remove item from cart
   const handleRemoveFromCart = useCallback(
     (itemId) => {
-      const userEmail = Cookies.get("Data") || "guest";
       dispatch(
         cartActions.removeCart({
           itemId: itemId,
-          userEmail: userEmail,
         })
       );
       showToast("Item removed from cart!", "success");
@@ -126,12 +117,10 @@ export default function ProductDetailPage() {
     [dispatch]
   );
 
-  // Toggle cart visibility
   const toggleCart = useCallback(() => {
     dispatch(cartActions.toggleCart());
   }, [dispatch]);
 
-  // Calculate cart total
   const calculateTotal = useCallback(() => {
     return cartItems
       .reduce((total, item) => {
@@ -140,7 +129,6 @@ export default function ProductDetailPage() {
       .toFixed(2);
   }, [cartItems]);
 
-  // Quantity controls
   const increaseQuantity = useCallback(
     () => setQuantity((prev) => prev + 1),
     []
@@ -171,8 +159,8 @@ export default function ProductDetailPage() {
               />
               <h3 className="mt-4">Product Not Found</h3>
               <p className="text-muted mb-4">
-                The product you're looking for doesn't exist or has been
-                removed.
+                The product you&apos;re looking for doesn&apos;t exist or has
+                been removed.
               </p>
               <Button
                 variant="primary"
@@ -194,7 +182,6 @@ export default function ProductDetailPage() {
       <Navbars />
       <Container className="my-4 my-md-5">
         <Row className="g-4">
-          {/* Product Image Column */}
           <Col md={6}>
             <div className="bg-light rounded-4 p-3 p-md-4 shadow-sm h-100">
               <div className="ratio ratio-1x1 position-relative">
@@ -210,7 +197,6 @@ export default function ProductDetailPage() {
             </div>
           </Col>
 
-          {/* Product Details Column */}
           <Col md={6}>
             <div className="d-flex flex-column h-100">
               <Badge bg="secondary" className="align-self-start mb-3">
@@ -230,7 +216,6 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              {/* Quantity Selector */}
               <div className="d-flex align-items-center mb-4">
                 <span className="me-3 fw-medium">Quantity:</span>
                 <Button
@@ -251,7 +236,6 @@ export default function ProductDetailPage() {
                 </Button>
               </div>
 
-              {/* Action Buttons */}
               <div className="d-flex flex-wrap gap-3 mb-4">
                 <Button
                   variant="primary"
@@ -289,7 +273,6 @@ export default function ProductDetailPage() {
                 </Button>
               </div>
 
-              {/* Product Description */}
               <div className="mb-4">
                 <h5 className="mb-3">Description</h5>
                 <p className="text-muted">
@@ -297,7 +280,6 @@ export default function ProductDetailPage() {
                 </p>
               </div>
 
-              {/* Skateboard Features */}
               {product.listingType === "skateboard" && (
                 <div className="mb-4">
                   <h5 className="mb-3">Features</h5>
@@ -323,7 +305,6 @@ export default function ProductDetailPage() {
           </Col>
         </Row>
 
-        {/* Cart Offcanvas */}
         <Offcanvas show={showCart} onHide={toggleCart} placement="end">
           <Offcanvas.Header closeButton className="border-bottom">
             <Offcanvas.Title className="fw-bold">
