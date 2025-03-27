@@ -37,6 +37,8 @@ const ForgotPasswordForm = () => {
 
     fetchUserData();
   }, []);
+  const Time = new Date();
+  const years = Time.getFullYear();
 
   const handleSubmit = async (values, { resetForm }) => {
     setIsLoading(true);
@@ -52,17 +54,21 @@ const ForgotPasswordForm = () => {
         "service_2cer1wn",
         "template_prcyhjn",
         {
+          companyName: "PrakashTech",
           email: user.email,
           password: user.password,
           name: user.name || "User",
           loginLink: "https://ecommerce-page-opal.vercel.app/user/signin",
+          year: years,
         },
         "U0vN6ww9BrU7Y_JSF"
       );
 
       showToast("Password recovery email sent successfully!", "success");
       resetForm();
-      navigate.push("/user/login");
+      setInterval(() => {
+        navigate.push("/user/signin");
+      }, 1500);
     } catch (error) {
       console.error("Email error:", error);
       showToast(
