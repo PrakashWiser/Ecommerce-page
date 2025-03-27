@@ -25,51 +25,86 @@ const Giturl =
   "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
 
 function ShopCollection() {
-  const cartItems = useSelector((state) => state.cart.cartItems);
+  const cartItems = useSelector((state) => state.cart.cartItems || []);
+  const cartError = useSelector((state) => state.cart.lastError);
+  const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const dispatch = useDispatch();
-  const userEmail = Cookies.get("Data") || "guest";
+
+  const userData = Cookies.get("Data");
+  const userEmail = userData ? JSON.parse(userData)?.email || "guest" : "guest";
 
   useEffect(() => {
-    dispatch(cartActions.initializeCart({ email: userEmail }));
+    const initializeCart = () => {
+      try {
+        console.log("Initializing cart for:", userEmail);
+        dispatch(cartActions.initializeCart({ email: userEmail }));
+        console.log("Cart initialized successfully");
+      } catch (error) {
+        console.error("Failed to initialize cart:", error);
+        showToast("Failed to load cart. Please refresh the page.", "error");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeCart();
   }, [dispatch, userEmail]);
+
+  useEffect(() => {
+    if (!isLoading && cartError) {
+      showToast(`Cart error: ${cartError}`, "error");
+    }
+  }, [isLoading, cartError]);
 
   const getTotalPrice = () => {
     return cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   };
 
   const handleRemoveFromCart = (id) => {
-    dispatch(cartActions.removeCart({ itemId: id }));
-    showToast("Item removed from cart!", "success");
+    try {
+      dispatch(cartActions.removeCart({ itemId: id }));
+      showToast("Item removed from cart!", "success");
+    } catch (error) {
+      showToast("Failed to remove item.", "error");
+    }
   };
 
   const handleIncrement = (id) => {
     const item = cartItems.find((item) => item.id === id);
     if (item) {
-      dispatch(
-        cartActions.updateQuantity({
-          id: item.id,
-          newQuantity: item.quantity + 1,
-        })
-      );
-      showToast("Quantity increased!", "success");
+      try {
+        dispatch(
+          cartActions.updateQuantity({
+            id: item.id,
+            newQuantity: item.quantity + 1,
+          })
+        );
+        showToast("Quantity increased!", "success");
+      } catch (error) {
+        showToast("Failed to update quantity.", "error");
+      }
     }
   };
 
   const handleDecrement = (id) => {
     const item = cartItems.find((item) => item.id === id);
     if (item) {
-      if (item.quantity > 1) {
-        dispatch(
-          cartActions.updateQuantity({
-            id: item.id,
-            newQuantity: item.quantity - 1,
-          })
-        );
-        showToast("Quantity decreased!", "success");
-      } else {
-        handleRemoveFromCart(id);
+      try {
+        if (item.quantity > 1) {
+          dispatch(
+            cartActions.updateQuantity({
+              id: item.id,
+              newQuantity: item.quantity - 1,
+            })
+          );
+          showToast("Quantity decreased!", "success");
+        } else {
+          handleRemoveFromCart(id);
+        }
+      } catch (error) {
+        showToast("Failed to update quantity.", "error");
       }
     }
   };
@@ -80,6 +115,7 @@ function ShopCollection() {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       setShowOrderModal(true);
     } catch (error) {
+      console.error("Checkout error:", error);
       showToast("Checkout failed. Please try again.", "error");
     } finally {
       setIsProcessing(false);
@@ -87,12 +123,30 @@ function ShopCollection() {
   };
 
   const confirmOrder = () => {
-    setShowOrderModal(false);
-    dispatch(cartActions.clearCart());
-    showToast("Order placed successfully!", "success");
+    try {
+      setShowOrderModal(false);
+      dispatch(cartActions.clearCart());
+      showToast("Order placed successfully!", "success");
+    } catch (error) {
+      showToast("Failed to clear cart.", "error");
+    }
   };
 
   console.log("Cart Items:", cartItems);
+  console.log("Cart Error:", cartError);
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <Navbars />
+        <Container className="my-4 min-vh-100 text-center">
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+        </Container>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -124,18 +178,23 @@ function ShopCollection() {
                               fill
                               className="img-fluid rounded object-fit-cover"
                               sizes="(max-width: 768px) 100px, 200px"
+                              onError={() =>
+                                console.error(
+                                  `Failed to load image: ${item.image}`
+                                )
+                              }
                             />
                           </div>
                         </Col>
                         <Col md={5} xs={8}>
                           <Card.Title className="fw-bold">
-                            {item.name}
+                            {item.name || "Unnamed Item"}
                           </Card.Title>
                           <Card.Text className="text-muted mb-1">
-                            Category: {item.listingType}
+                            Category: {item.listingType || "N/A"}
                           </Card.Text>
                           <Card.Text className="fw-bold text-muted mb-2">
-                            Price: ₹{item.price.toFixed(2)}
+                            Price: ₹{(item.price || 0).toFixed(2)}
                           </Card.Text>
                           <Button
                             variant="info"
@@ -160,7 +219,7 @@ function ShopCollection() {
                               <FaMinus />
                             </Button>
                             <span className="mx-3 fw-bold">
-                              {item.quantity}
+                              {item.quantity || 0}
                             </span>
                             <Button
                               variant="outline-secondary"
@@ -260,7 +319,7 @@ function ShopCollection() {
             />
             <h3 className="mb-3">Your cart is empty</h3>
             <p className="text-muted mb-4">
-              Looks like you haven&apos;t added anything to your cart yet
+              Looks like you haven't added anything to your cart yet
             </p>
             <Button variant="primary" className="text-white" href="/" as={Link}>
               Continue Shopping

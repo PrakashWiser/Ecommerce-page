@@ -139,10 +139,13 @@ const Login = () => {
       .min(6, "Password must be at least 6 characters"),
   });
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = (values, { setSubmitting }) => {
     const { email, password } = values;
 
     try {
+      Cookies.remove("Admin");
+      Cookies.remove("Data");
+
       const user = apiData.find((item) => item.email === email);
 
       if (!user) {
@@ -156,6 +159,7 @@ const Login = () => {
       }
 
       dispatch(cartActions.initializeCart({ email: user.email }));
+
       const isAdmin = user.email === "prakashlunatic2@gmail.com";
       const cookieName = isAdmin ? "Admin" : "Data";
 
@@ -166,18 +170,20 @@ const Login = () => {
           name: user.name || "",
         }),
         {
-          expires: 7,
-          secure: process.env.NODE_ENV === "production",
+          expires: 1,
           sameSite: "strict",
           path: "/",
         }
       );
 
       showToast("Successfully logged in!", "success");
-      router.push(isAdmin ? "/admin/adminproductsdetails" : "/");
+
+      const redirectPath = isAdmin ? "/admin/adminproductsdetails" : "/";
+      router.push(redirectPath);
+      router.refresh(); 
     } catch (error) {
-      console.error("Login error:", error);
-      showToast("Login failed. Please try again.", "error");
+      console.error("Login error:", error.message);
+      showToast(`Login failed: ${error.message}`, "error");
     } finally {
       setSubmitting(false);
     }
@@ -276,19 +282,13 @@ const Login = () => {
                   Sign In
                 </button>
 
-                <Link
-                  href="/user/signupp"
-                  className="btn btn-outline-primary"
-                >
+                <Link href="/user/signupp" className="btn btn-outline-primary">
                   Create Account
                 </Link>
               </div>
 
               <div className="text-center mt-3">
-                <Link
-                  href="/user/forgot-password"
-                  className="forgot-password"
-                >
+                <Link href="/user/forgot-password" className="forgot-password">
                   Forgot password?
                 </Link>
               </div>

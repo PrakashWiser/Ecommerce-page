@@ -125,12 +125,12 @@ function Navbars() {
   }, []);
 
   const handleLogout = useCallback(() => {
-    Cookies.remove("Data"); // Clear user cookie
-    Cookies.remove("Admin"); // Clear admin cookie
-    localStorage.clear(); // Clear localStorage
-    dispatch(cartActions.clearCart()); // Clear Redux cart state
-    setSessionData(null); // Update local state
-    router.push("/"); // Redirect to home
+    Cookies.remove("Data");
+    Cookies.remove("Admin");
+    localStorage.clear(); 
+    dispatch(cartActions.clearCart()); 
+    setSessionData(null); 
+    router.push("/"); 
   }, [router, dispatch]);
 
   const dropdownItems = useMemo(

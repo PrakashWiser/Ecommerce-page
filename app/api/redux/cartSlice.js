@@ -1,4 +1,3 @@
-// cartSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const getCartKey = (email) => (email ? `cart_${email}` : "cart_guest");
@@ -12,7 +11,6 @@ const initialState = {
 };
 
 const MAX_QUANTITY = 10;
-
 const loadCart = (email) => {
   if (typeof window === "undefined") return initialState;
   try {
@@ -26,7 +24,7 @@ const loadCart = (email) => {
 };
 
 const saveToLocalStorage = (state) => {
-  if (typeof window === "undefined" || !state.currentUserEmail) return;
+  if (typeof window === "undefined" || !state.currentUserEmail) return false;
   try {
     const key = getCartKey(state.currentUserEmail);
     const dataToSave = {
@@ -50,15 +48,15 @@ const cartSlice = createSlice({
       const { email } = action.payload || {};
       if (!email) {
         state.lastError = "Email required for cart initialization";
-        return state;
+        return;
       }
+
       const loadedCart = loadCart(email);
-      return {
-        ...loadedCart,
-        currentUserEmail: email,
-        showCart: state.showCart,
-        lastError: null,
-      };
+      state.cartItems = loadedCart.cartItems || [];
+      state.totalQuantity = loadedCart.totalQuantity || 0;
+      state.showCart = loadedCart.showCart || false;
+      state.currentUserEmail = email;
+      state.lastError = null;
     },
     addCart(state, action) {
       const { newItem } = action.payload || {};
@@ -66,7 +64,7 @@ const cartSlice = createSlice({
       if (!newItem?.id || !newItem?.price) {
         state.lastError = "Invalid item: must have id and price";
         console.error(state.lastError);
-        return state;
+        return;
       }
 
       const existingItem = state.cartItems.find(
@@ -99,20 +97,30 @@ const cartSlice = createSlice({
     },
     removeCart(state, action) {
       const { itemId } = action.payload || {};
-      const existingItem = state.cartItems.find((item) => item.id === itemId);
+      const existingItemIndex = state.cartItems.findIndex(
+        (item) => item.id === itemId
+      );
 
-      if (existingItem) {
+      if (existingItemIndex !== -1) {
+        const existingItem = state.cartItems[existingItemIndex];
         state.totalQuantity -= existingItem.quantity;
-        state.cartItems = state.cartItems.filter((item) => item.id !== itemId);
+        state.cartItems.splice(existingItemIndex, 1);
         state.lastError = null;
         saveToLocalStorage(state);
+      } else {
+        state.lastError = `Item with id ${itemId} not found`;
       }
     },
     updateQuantity(state, action) {
       const { id, newQuantity } = action.payload || {};
       const existingItem = state.cartItems.find((item) => item.id === id);
 
-      if (existingItem && newQuantity >= 0) {
+      if (!existingItem) {
+        state.lastError = `Item with id ${id} not found`;
+        return;
+      }
+
+      if (newQuantity >= 0) {
         const validatedQuantity = Math.min(
           Math.max(0, newQuantity),
           MAX_QUANTITY
@@ -125,6 +133,8 @@ const cartSlice = createSlice({
         state.totalQuantity += quantityDifference;
         state.lastError = null;
         saveToLocalStorage(state);
+      } else {
+        state.lastError = "Quantity cannot be negative";
       }
     },
     toggleCart(state) {
@@ -134,8 +144,19 @@ const cartSlice = createSlice({
     clearCart(state) {
       state.cartItems = [];
       state.totalQuantity = 0;
+      state.showCart = false;
       state.lastError = null;
-      saveToLocalStorage(state);
+      if (state.currentUserEmail) {
+        saveToLocalStorage(state);
+      }
+    },
+    resetCartState(state) {
+      state.cartItems = [];
+      state.totalQuantity = 0;
+      state.showCart = false;
+      state.currentUserEmail = null;
+      state.lastError = null;
+      localStorage.removeItem(getCartKey(state.currentUserEmail));
     },
   },
 });
