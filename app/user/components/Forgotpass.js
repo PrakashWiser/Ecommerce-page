@@ -49,20 +49,20 @@ const ForgotPasswordForm = () => {
       }
 
       await emailjs.send(
-        "service_72r8vx9",
-        "template_kaejm6q",
+        "service_2cer1wn",
+        "template_prcyhjn",
         {
           email: user.email,
           password: user.password,
           name: user.name || "User",
           loginLink: "https://ecommerce-page-opal.vercel.app/user/signin",
         },
-        "hsXNZe7o22G803hHp"
+        "U0vN6ww9BrU7Y_JSF"
       );
 
       showToast("Password recovery email sent successfully!", "success");
       resetForm();
-      navigate("/user/login");
+      navigate.push("/user/login");
     } catch (error) {
       console.error("Email error:", error);
       showToast(
