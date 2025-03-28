@@ -20,6 +20,7 @@ import Emptys from "@/app/assets/images/direct_empty_cart.webp";
 import { FaMinus, FaPlus } from "react-icons/fa";
 import Link from "next/link";
 import Cookies from "js-cookie";
+import Login from "@/app/user/signin/page";
 
 const Giturl =
   "https://raw.githubusercontent.com/prakashwiser/Ecommerce-page/refs/heads/main/app/assets/images/";
@@ -30,16 +31,17 @@ function ShopCollection() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const dispatch = useDispatch();
 
   const userData = Cookies.get("Data");
-  const userEmail = userData ? JSON.parse(userData)?.email || "guest" : "guest";
+  const isLoggedIn = !!userData;
 
   useEffect(() => {
     const initializeCart = () => {
       try {
-        console.log("Initializing cart for:", userEmail);
-        dispatch(cartActions.initializeCart({ email: userEmail }));
+        console.log("Initializing cart");
+        dispatch(cartActions.initializeCart());
         console.log("Cart initialized successfully");
       } catch (error) {
         console.error("Failed to initialize cart:", error);
@@ -50,7 +52,7 @@ function ShopCollection() {
     };
 
     initializeCart();
-  }, [dispatch, userEmail]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (!isLoading && cartError) {
@@ -110,6 +112,11 @@ function ShopCollection() {
   };
 
   const handleCheckout = async () => {
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+
     setIsProcessing(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -132,8 +139,10 @@ function ShopCollection() {
     }
   };
 
-  console.log("Cart Items:", cartItems);
-  console.log("Cart Error:", cartError);
+  const handleLoginSuccess = () => {
+    setShowLoginModal(false);
+    handleCheckout();
+  };
 
   if (isLoading) {
     return (
@@ -326,6 +335,33 @@ function ShopCollection() {
             </Button>
           </div>
         )}
+
+        <Modal
+          show={showLoginModal}
+          onHide={() => setShowLoginModal(false)}
+          centered
+          dialogClassName="custom-modal"
+          contentClassName="custom-modal-content"
+        >
+          <div
+            className="modal-inner-container"
+            style={{
+              width: "100%",
+              maxWidth: "500px",
+              padding: "20px",
+              backgroundColor: "white",
+              borderRadius: "8px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              overflowY: "auto",
+            }}
+          >
+            <Login
+              onLoginSuccess={handleLoginSuccess}
+              compact={true}
+              pathName={true} 
+            />
+          </div>
+        </Modal>
 
         <Modal
           show={showOrderModal}

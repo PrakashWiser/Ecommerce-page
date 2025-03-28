@@ -1,7 +1,6 @@
 "use client";
-import "bootstrap/dist/css/bootstrap.min.css";
 import { ImGithub } from "react-icons/im";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
@@ -9,107 +8,13 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Cookies from "js-cookie";
 import { showToast } from "@/app/user/components/ToastMessage";
-import { useDispatch } from "react-redux";
-import { cartActions } from "@/app/api/redux/cartSlice";
 
-const styles = `
-  .login-container {
-    padding: 1rem;
-    min-height: 100vh;
-  }
-  .login-form {
-    width: 100%;
-    max-width: 400px;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  }
-  .login-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-  }
-  .login-subtitle {
-    font-size: 0.95rem;
-    color: #6b7280;
-  }
-  .form-control {
-    padding: 0.75rem;
-    border-radius: 8px;
-  }
-  .btn {
-    padding: 0.75rem;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-  }
-  .btn-success {
-    background-color: #10b981;
-    border-color: #10b981;
-  }
-  .btn-success:hover {
-    background-color: #0da271;
-    border-color: #0da271;
-  }
-  .github-icon {
-    font-size: 1.75rem;
-    color: #1f2937;
-    transition: transform 0.2s ease;
-  }
-  .github-icon:hover {
-    transform: scale(1.1);
-  }
-  .form-label {
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-  }
-  .invalid-feedback {
-    font-size: 0.85rem;
-  }
-  .forgot-password {
-    font-size: 0.9rem;
-    color: #6b7280;
-    transition: color 0.2s ease;
-  }
-  .forgot-password:hover {
-    color: #374151;
-    text-decoration: none;
-  }
-
-  @media (min-width: 768px) {
-    .login-container {
-      padding: 2rem;
-    }
-    .login-title {
-      font-size: 2rem;
-    }
-    .login-subtitle {
-      font-size: 1rem;
-    }
-    .btn-group {
-      flex-direction: row;
-      gap: 1rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .login-form {
-      padding: 1.25rem;
-    }
-    .btn-group {
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .btn {
-      width: 100%;
-    }
-  }
-`;
-
-const Login = () => {
+const Login = ({ onLoginSuccess, compact = false, pathName }) => {
   const [apiData, setApiData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const dispatch = useDispatch();
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/signin";
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -158,8 +63,6 @@ const Login = () => {
         return;
       }
 
-      dispatch(cartActions.initializeCart({ email: user.email }));
-
       const isAdmin = user.email === "prakashlunatic2@gmail.com";
       const cookieName = isAdmin ? "Admin" : "Data";
 
@@ -178,9 +81,20 @@ const Login = () => {
 
       showToast("Successfully logged in!", "success");
 
-      const redirectPath = isAdmin ? "/admin/adminproductsdetails" : "/";
-      router.push(redirectPath);
-      router.refresh(); 
+      if (onLoginSuccess) {
+        // If onLoginSuccess is provided (e.g., from ShopCollection), call it and don’t redirect
+        onLoginSuccess();
+      } else {
+        // Only redirect if onLoginSuccess isn’t provided (e.g., direct /signin access)
+        let redirectPath;
+        if (pathName) {
+          redirectPath = "/user/usershopcollection";
+        } else {
+          redirectPath = isAdmin ? "/admin/adminproductsdetails" : "/";
+        }
+        router.push(redirectPath);
+        router.refresh();
+      }
     } catch (error) {
       console.error("Login error:", error.message);
       showToast(`Login failed: ${error.message}`, "error");
@@ -191,7 +105,10 @@ const Login = () => {
 
   if (isLoading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: isLoginPage || compact ? "auto" : "100vh" }}
+      >
         <div className="spinner-border text-success" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -200,9 +117,27 @@ const Login = () => {
   }
 
   return (
-    <>
-      <style>{styles}</style>
-      <div className="login-container d-flex flex-column justify-content-center align-items-center">
+    <div
+      className={
+        isLoginPage
+          ? "min-vh-100 d-flex flex-column justify-content-center align-items-center bg-light"
+          : compact
+          ? "p-3"
+          : "d-flex flex-column justify-content-center align-items-center"
+      }
+    >
+      <style jsx>{`
+        .login-form {
+          width: 100%;
+          max-width: ${isLoginPage ? "400px" : "100%"};
+          padding: 1.5rem;
+          border-radius: 12px;
+          box-shadow: ${isLoginPage ? "0 4px 6px rgba(0, 0, 0, 0.05)" : "none"};
+          background: white;
+        }
+      `}</style>
+
+      {(!compact || isLoginPage) && (
         <div className="text-center mb-4">
           <a
             href="https://github.com/prakashwiser/"
@@ -211,92 +146,98 @@ const Login = () => {
             aria-label="GitHub profile"
             className="d-inline-block mb-3"
           >
-            <ImGithub className="github-icon" />
+            <ImGithub className="fs-2" />
           </a>
-          <h1 className="login-title mb-2">Welcome back</h1>
-          <p className="login-subtitle">Sign in to continue to your account</p>
+          <h1 className="fw-bold mb-2">Welcome back</h1>
+          <p className="text-muted">Sign in to continue to your account</p>
         </div>
+      )}
 
-        <Formik
-          initialValues={{ email: "", password: "" }}
-          validationSchema={validationSchema}
-          onSubmit={handleSubmit}
-        >
-          {({ isSubmitting, errors, touched }) => (
-            <Form className="login-form bg-white">
-              <div className="mb-3">
-                <label htmlFor="email" className="form-label">
-                  Email
-                </label>
-                <Field
-                  type="email"
-                  name="email"
-                  id="email"
-                  className={`form-control ${
-                    touched.email && errors.email ? "is-invalid" : ""
-                  }`}
-                  placeholder="Enter your email"
-                  autoComplete="username"
-                />
-                <ErrorMessage
-                  name="email"
-                  component="div"
-                  className="invalid-feedback"
-                />
-              </div>
+      <Formik
+        initialValues={{ email: "", password: "" }}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting, errors, touched }) => (
+          <Form className="login-form">
+            <div className="mb-3">
+              <label htmlFor="email" className="form-label">
+                Email
+              </label>
+              <Field
+                type="email"
+                name="email"
+                id="email"
+                className={`form-control ${
+                  touched.email && errors.email ? "is-invalid" : ""
+                }`}
+                placeholder="Enter your email"
+                autoComplete="username"
+              />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="invalid-feedback"
+              />
+            </div>
 
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">
-                  Password
-                </label>
-                <Field
-                  type="password"
-                  name="password"
-                  id="password"
-                  className={`form-control ${
-                    touched.password && errors.password ? "is-invalid" : ""
-                  }`}
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                />
-                <ErrorMessage
-                  name="password"
-                  component="div"
-                  className="invalid-feedback"
-                />
-              </div>
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">
+                Password
+              </label>
+              <Field
+                type="password"
+                name="password"
+                id="password"
+                className={`form-control ${
+                  touched.password && errors.password ? "is-invalid" : ""
+                }`}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+              />
+              <ErrorMessage
+                name="password"
+                component="div"
+                className="invalid-feedback"
+              />
+            </div>
 
-              <div className="d-flex justify-content-between align-items-center mt-4 btn-group">
-                <button
-                  type="submit"
-                  className="btn btn-success"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <span
-                      className="spinner-border spinner-border-sm me-2"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
-                  ) : null}
-                  Sign In
-                </button>
+            <div className="d-grid gap-2 mt-4">
+              <button
+                type="submit"
+                className="btn btn-success"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                ) : null}
+                Sign In
+              </button>
 
-                <Link href="/user/signupp" className="btn btn-outline-primary">
-                  Create Account
-                </Link>
-              </div>
-
-              <div className="text-center mt-3">
-                <Link href="/user/forgot" className="forgot-password">
-                  Forgot password?
-                </Link>
-              </div>
-            </Form>
-          )}
-        </Formik>
-      </div>
-    </>
+              {(!compact || isLoginPage) && (
+                <>
+                  <Link
+                    href="/user/signupp"
+                    className="btn btn-outline-primary"
+                  >
+                    Create Account
+                  </Link>
+                  <div className="text-center mt-2">
+                    <Link href="/user/forgot" className="text-muted small">
+                      Forgot password?
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </div>
   );
 };
 

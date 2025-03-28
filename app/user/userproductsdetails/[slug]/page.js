@@ -10,7 +10,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { cartActions } from "@/app/api/redux/cartSlice";
 import { showToast } from "@/app/user/components/ToastMessage";
 import Loader from "@/app/user/components/Loader";
-import Cookies from "js-cookie";
 import { FaShopify, FaPlus, FaMinus } from "react-icons/fa";
 import { useGlobalContext } from "@/app/api/providers/GlobalContext";
 import Image from "next/image";
@@ -49,8 +48,7 @@ export default function ProductDetailPage() {
   const { data: globalData, loading: globalLoading } = useGlobalContext();
 
   useEffect(() => {
-    const userEmail = Cookies.get("Data") || "guest";
-    dispatch(cartActions.initializeCart({ email: userEmail }));
+    dispatch(cartActions.initializeCart()); // Removed email parameter
 
     if (!productId) {
       setLoading(false);
@@ -62,15 +60,7 @@ export default function ProductDetailPage() {
       setProduct(foundProduct);
       setLoading(false);
     }
-
-    const userData = Cookies.get("Data");
-    if (!userData) {
-      showToast("Please Login", "error");
-      setInterval(() => {
-        router.push("/user/signin");
-      }, 1000);
-    }
-  }, [globalData, router, productId, dispatch]);
+  }, [globalData, productId, dispatch]);
 
   const handleAddToCart = debounce(() => {
     if (!product?.price) {
@@ -180,7 +170,7 @@ export default function ProductDetailPage() {
               />
               <h3 className="mt-4">Product Not Found</h3>
               <p className="text-muted mb-4">
-                The product you\'re looking for doesn\'t exist or has been
+                The product you're looking for doesn't exist or has been
                 removed.
               </p>
               <Button

@@ -1,21 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const getCartKey = (email) => (email ? `cart_${email}` : "cart_guest");
+const CART_KEY = "cart"; 
 
 const initialState = {
   cartItems: [],
   showCart: false,
   totalQuantity: 0,
-  currentUserEmail: null,
   lastError: null,
 };
 
 const MAX_QUANTITY = 10;
-const loadCart = (email) => {
+
+const loadCart = () => {
   if (typeof window === "undefined") return initialState;
   try {
-    const key = getCartKey(email);
-    const savedCart = localStorage.getItem(key);
+    const savedCart = localStorage.getItem(CART_KEY);
     return savedCart ? JSON.parse(savedCart) : initialState;
   } catch (error) {
     console.error("Failed to load cart:", error);
@@ -24,15 +23,14 @@ const loadCart = (email) => {
 };
 
 const saveToLocalStorage = (state) => {
-  if (typeof window === "undefined" || !state.currentUserEmail) return false;
+  if (typeof window === "undefined") return false;
   try {
-    const key = getCartKey(state.currentUserEmail);
     const dataToSave = {
       cartItems: state.cartItems,
       totalQuantity: state.totalQuantity,
       showCart: state.showCart,
     };
-    localStorage.setItem(key, JSON.stringify(dataToSave));
+    localStorage.setItem(CART_KEY, JSON.stringify(dataToSave));
     return true;
   } catch (error) {
     console.error("Failed to save cart:", error);
@@ -44,18 +42,11 @@ const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    initializeCart(state, action) {
-      const { email } = action.payload || {};
-      if (!email) {
-        state.lastError = "Email required for cart initialization";
-        return;
-      }
-
-      const loadedCart = loadCart(email);
+    initializeCart(state) {
+      const loadedCart = loadCart();
       state.cartItems = loadedCart.cartItems || [];
       state.totalQuantity = loadedCart.totalQuantity || 0;
       state.showCart = loadedCart.showCart || false;
-      state.currentUserEmail = email;
       state.lastError = null;
     },
     addCart(state, action) {
@@ -146,17 +137,14 @@ const cartSlice = createSlice({
       state.totalQuantity = 0;
       state.showCart = false;
       state.lastError = null;
-      if (state.currentUserEmail) {
-        saveToLocalStorage(state);
-      }
+      saveToLocalStorage(state);
     },
     resetCartState(state) {
       state.cartItems = [];
       state.totalQuantity = 0;
       state.showCart = false;
-      state.currentUserEmail = null;
       state.lastError = null;
-      localStorage.removeItem(getCartKey(state.currentUserEmail));
+      localStorage.removeItem(CART_KEY);
     },
   },
 });

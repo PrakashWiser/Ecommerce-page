@@ -67,7 +67,7 @@ const ForgotPasswordForm = () => {
       showToast("Password recovery email sent successfully!", "success");
       resetForm();
       setInterval(() => {
-        navigate.push("/user/signin");
+        navigate.push("/user/signin"); 
       }, 1500);
     } catch (error) {
       console.error("Email error:", error);

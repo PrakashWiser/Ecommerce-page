@@ -217,15 +217,23 @@ hr,
   }
 }
 
-.flash-hover-btn {
-  background-color: #4e73df;
-  transition: background-color 0.2s ease;
+.custom-modal {
+  margin: 1rem;
+  width: 100%;
+  max-height: 100vh;
 }
 
-.flash-hover-btn {
-  background-color: #e74a3b;
-  animation: colorFlash 0.3s linear infinite;
+.custom-modal-content {
+  background: transparent;
+  border: none;
+  height: auto;
 }
+
+.modal-inner-container {
+  position: relative;
+  max-height: calc(100vh - 2rem);
+}
+
 @keyframes colorFlash {
   0% {
     background-color: #4e73df;
@@ -284,5 +292,18 @@ hr,
   .home_sec_three .img_details {
     width: 100%;
     height: auto;
+  }
+}
+@media (max-width: 576px) {
+  .custom-modal {
+    margin: 0.5rem;
+    padding: 0;
+  }
+
+  .modal-inner-container {
+    max-height: calc(100vh - 1rem);
+    border-radius: 0;
+    margin: 0;
+    min-height: auto;
   }
 }
