@@ -127,10 +127,10 @@ function Navbars() {
   const handleLogout = useCallback(() => {
     Cookies.remove("Data");
     Cookies.remove("Admin");
-    localStorage.clear(); 
-    dispatch(cartActions.clearCart()); 
-    setSessionData(null); 
-    router.push("/"); 
+    localStorage.clear();
+    dispatch(cartActions.clearCart());
+    setSessionData(null);
+    router.push("/");
   }, [router, dispatch]);
 
   const dropdownItems = useMemo(

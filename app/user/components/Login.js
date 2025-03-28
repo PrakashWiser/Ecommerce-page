@@ -9,7 +9,11 @@ import * as Yup from "yup";
 import Cookies from "js-cookie";
 import { showToast } from "@/app/user/components/ToastMessage";
 
-const Login = ({ onLoginSuccess, compact = false, pathName }) => {
+const Login = ({
+  onLoginSuccess,
+  compact = false,
+  fromCollectionPage = false,
+}) => {
   const [apiData, setApiData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -44,12 +48,13 @@ const Login = ({ onLoginSuccess, compact = false, pathName }) => {
       .min(6, "Password must be at least 6 characters"),
   });
 
-  const handleSubmit = (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting }) => {
     const { email, password } = values;
 
     try {
-      Cookies.remove("Admin");
-      Cookies.remove("Data");
+      // Clear existing cookies
+      Cookies.remove("Admin", { path: "/" });
+      Cookies.remove("Data", { path: "/" });
 
       const user = apiData.find((item) => item.email === email);
 
@@ -65,38 +70,56 @@ const Login = ({ onLoginSuccess, compact = false, pathName }) => {
 
       const isAdmin = user.email === "prakashlunatic2@gmail.com";
       const cookieName = isAdmin ? "Admin" : "Data";
+      const userData = {
+        email: user.email,
+        name: user.name || "",
+        isAdmin,
+        loggedInAt: new Date().toISOString(),
+      };
 
-      Cookies.set(
-        cookieName,
-        JSON.stringify({
-          email: user.email,
-          name: user.name || "",
-        }),
-        {
-          expires: 1,
-          sameSite: "strict",
-          path: "/",
-        }
-      );
+      // Set secure cookie with proper options
+      Cookies.set(cookieName, JSON.stringify(userData), {
+        expires: 1, // 1 day
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+      });
 
       showToast("Successfully logged in!", "success");
 
       if (onLoginSuccess) {
-        // If onLoginSuccess is provided (e.g., from ShopCollection), call it and don’t redirect
-        onLoginSuccess();
+        onLoginSuccess(userData);
       } else {
-        // Only redirect if onLoginSuccess isn’t provided (e.g., direct /signin access)
         let redirectPath;
-        if (pathName) {
-          redirectPath = "/user/usershopcollection";
-        } else {
-          redirectPath = isAdmin ? "/admin/adminproductsdetails" : "/";
+
+        // 1. Admin always goes to admin dashboard
+        if (isAdmin) {
+          redirectPath = "/admin/adminproductsdetails";
         }
+        // 2. If coming from collection page, go back there
+        else if (fromCollectionPage) {
+          redirectPath = "/user/usershopcollection";
+        }
+        // 3. If on login page, go to home
+        else if (isLoginPage) {
+          redirectPath = "/";
+        }
+        // 4. Default: Stay on current page or go home
+        else {
+          redirectPath = pathname || "/";
+        }
+
         router.push(redirectPath);
         router.refresh();
+
+        // Additional actions after login
+        if (typeof window !== "undefined") {
+          localStorage.setItem("userSession", JSON.stringify(userData));
+          window.dispatchEvent(new Event("userLoggedIn"));
+        }
       }
     } catch (error) {
-      console.error("Login error:", error.message);
+      console.error("Login error:", error);
       showToast(`Login failed: ${error.message}`, "error");
     } finally {
       setSubmitting(false);
@@ -220,12 +243,14 @@ const Login = ({ onLoginSuccess, compact = false, pathName }) => {
 
               {(!compact || isLoginPage) && (
                 <>
-                  <Link
-                    href="/user/signupp"
-                    className="btn btn-outline-primary"
-                  >
-                    Create Account
-                  </Link>
+                  {!fromCollectionPage && (
+                    <Link
+                      href="/user/signupp"
+                      className="btn btn-outline-primary"
+                    >
+                      Create Account
+                    </Link>
+                  )}
                   <div className="text-center mt-2">
                     <Link href="/user/forgot" className="text-muted small">
                       Forgot password?

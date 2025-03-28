@@ -343,24 +343,27 @@ function ShopCollection() {
           dialogClassName="custom-modal"
           contentClassName="custom-modal-content"
         >
-          <div
-            className="modal-inner-container"
-            style={{
-              width: "100%",
-              maxWidth: "500px",
-              padding: "20px",
-              backgroundColor: "white",
-              borderRadius: "8px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              overflowY: "auto",
-            }}
-          >
-            <Login
-              onLoginSuccess={handleLoginSuccess}
-              compact={true}
-              pathName={true} 
-            />
-          </div>
+          <Modal.Header closeButton>
+          </Modal.Header>
+          <Modal.Body>
+            <div
+              className="modal-inner-container"
+              style={{
+                width: "100%",
+                maxWidth: "500px",
+                padding: "20px",
+                backgroundColor: "white",
+                borderRadius: "8px",
+                overflowY: "auto",
+              }}
+            >
+              <Login
+                onLoginSuccess={handleLoginSuccess}
+                compact={true}
+                fromCollectionPage={true}
+              />
+            </div>
+          </Modal.Body>
         </Modal>
 
         <Modal

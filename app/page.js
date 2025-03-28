@@ -162,7 +162,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       <section>
         <div className="home_sec_two">
           <Container>
@@ -231,7 +230,7 @@ export default function Home() {
                           cursor: "pointer",
                         }}
                       >
-                        <div style={{ height: "200px", overflow: "hidden" }}>
+                        <div style={{ height: "300px", overflow: "hidden" }}>
                           <Card.Img
                             variant="top"
                             src={Giturl + item.image}
