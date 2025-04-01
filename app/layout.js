@@ -1,20 +1,14 @@
-import localFont from "next/font/local";
+import { Montserrat } from "next/font/google";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./globals.css";
 import Footer from "./user/components/Footer";
 import ReduxProvider from "./api/providers/ReduxProvider";
 import { GlobalProvider } from "./api/providers/GlobalContext";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-montserrat",
 });
 
 export const metadata = {
@@ -25,7 +19,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${montserrat.variable}`}>
         <ReduxProvider>
           <GlobalProvider>{children}</GlobalProvider>
         </ReduxProvider>
