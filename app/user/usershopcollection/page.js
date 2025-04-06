@@ -241,7 +241,7 @@ function ShopCollection() {
                             </Button>
                           </div>
                           <Card.Text className="fw-bold">
-                            Total: ₹{(item.price * item.quantity).toFixed(2)}
+                            Total: ₹{(item.price * item.quantity).toFixed()}
                           </Card.Text>
                           <Button
                             variant="danger"
@@ -273,7 +273,7 @@ function ShopCollection() {
                         )}{" "}
                         items)
                       </span>
-                      <span>₹{getTotalPrice().toFixed(2)}</span>
+                      <span>₹{getTotalPrice().toFixed(0)}</span>
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span>Discount</span>
@@ -340,28 +340,41 @@ function ShopCollection() {
           show={showLoginModal}
           onHide={() => setShowLoginModal(false)}
           centered
-          dialogClassName="custom-modal"
-          contentClassName="custom-modal-content"
+          backdrop="static"
+          keyboard={false}
+          dialogClassName="modal-dialog-centered modal-sm"
+          contentClassName="border-0 shadow-lg"
         >
-          <Modal.Header closeButton>
+          <Modal.Header closeButton className="border-0 pb-0">
+            <Modal.Title className="visually-hidden">
+              Login Required
+            </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
-            <div
-              className="modal-inner-container"
-              style={{
-                width: "100%",
-                maxWidth: "500px",
-                padding: "20px",
-                backgroundColor: "white",
-                borderRadius: "8px",
-                overflowY: "auto",
-              }}
-            >
-              <Login
-                onLoginSuccess={handleLoginSuccess}
-                compact={true}
-                fromCollectionPage={true}
-              />
+
+          <Modal.Body className="pt-0 px-4 pb-4">
+            <div className="text-center mb-4">
+              <h5 className="fw-bold mb-2">Sign in to continue</h5>
+              <p className="text-muted small">
+                Please login to access your collection
+              </p>
+            </div>
+
+            <Login
+              onLoginSuccess={handleLoginSuccess}
+              compact={true}
+              fromCollectionPage={true}
+            />
+
+            <div className="text-center mt-3">
+              <button
+                className="btn btn-outline-primary btn-sm"
+                onClick={() => {
+                  setShowLoginModal(false);
+                  router.push("/user/signupp");
+                }}
+              >
+                Create account
+              </button>
             </div>
           </Modal.Body>
         </Modal>

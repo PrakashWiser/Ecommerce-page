@@ -11,12 +11,253 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Navbars from "./user/components/Navbars";
-import Loader from "./user/components/Loader";
 import Embty from "../app/assets/images/embty-data.webp";
 import { useGlobalContext } from "./api/providers/GlobalContext";
 import { motion } from "framer-motion";
 
-export default function Home() {
+// Skeleton Loader Component
+const SkeletonLoader = () => {
+  const skeletonVariants = {
+    animate: {
+      opacity: [0.5, 1, 0.5],
+      transition: {
+        duration: 1.5,
+        repeat: Infinity,
+        ease: "easeInOut",
+      },
+    },
+  };
+
+  const SkeletonCard = () => (
+    <Col md={6} lg={3} className="mb-4 d-flex">
+      <motion.div
+        className="w-100"
+        variants={skeletonVariants}
+        animate="animate"
+      >
+        <Card className="shadow h-100">
+          <div style={{ height: "300px", background: "#e0e0e0" }} />
+          <Card.Body className="d-flex flex-column">
+            <div
+              style={{
+                height: "20px",
+                width: "70%",
+                background: "#e0e0e0",
+                marginBottom: "10px",
+                borderRadius: "4px",
+              }}
+            />
+            <div
+              style={{
+                height: "60px",
+                width: "100%",
+                background: "#e0e0e0",
+                marginBottom: "10px",
+                borderRadius: "4px",
+              }}
+            />
+            <div className="d-flex justify-content-between align-items-center">
+              <div
+                style={{
+                  height: "16px",
+                  width: "30%",
+                  background: "#e0e0e0",
+                  borderRadius: "4px",
+                }}
+              />
+              <div
+                style={{
+                  height: "20px",
+                  width: "20px",
+                  background: "#e0e0e0",
+                  borderRadius: "50%",
+                }}
+              />
+            </div>
+          </Card.Body>
+        </Card>
+      </motion.div>
+    </Col>
+  );
+
+  const SkeletonCategory = () => (
+    <Col xs={6} md={3}>
+      <motion.div
+        className="shadow p-4 rounded"
+        variants={skeletonVariants}
+        animate="animate"
+      >
+        <div
+          style={{
+            height: "24px",
+            width: "24px",
+            background: "#e0e0e0",
+            margin: "0 auto 15px",
+            borderRadius: "50%",
+          }}
+        />
+        <div
+          style={{
+            height: "20px",
+            width: "60%",
+            background: "#e0e0e0",
+            margin: "0 auto 10px",
+            borderRadius: "4px",
+          }}
+        />
+        <div
+          style={{
+            height: "16px",
+            width: "40%",
+            background: "#e0e0e0",
+            margin: "0 auto",
+            borderRadius: "4px",
+          }}
+        />
+      </motion.div>
+    </Col>
+  );
+
+  return (
+    <>
+      <section>
+        <div className="home_sec_one mb-5 position-relative">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1440 320"
+            className="position_tybe"
+          >
+            <path
+              fill="#10b981"
+              fillOpacity="1"
+              d="M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,122.7C672,96,768,96,864,122.7C960,149,1056,203,1152,213.3C1248,224,1344,192,1392,176L1440,160L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+            ></path>
+          </svg>
+          <Container>
+            <Row className="align-items-center">
+              <Col md={7}>
+                <motion.div
+                  className="mb-3"
+                  variants={skeletonVariants}
+                  animate="animate"
+                  style={{
+                    height: "30px",
+                    width: "150px",
+                    background: "#e0e0e0",
+                    borderRadius: "20px",
+                  }}
+                />
+                <motion.div
+                  variants={skeletonVariants}
+                  animate="animate"
+                  style={{
+                    height: "40px",
+                    width: "80%",
+                    background: "#e0e0e0",
+                    marginBottom: "20px",
+                    borderRadius: "4px",
+                  }}
+                />
+                <motion.div
+                  variants={skeletonVariants}
+                  animate="animate"
+                  style={{
+                    height: "60px",
+                    width: "100%",
+                    background: "#e0e0e0",
+                    marginBottom: "20px",
+                    borderRadius: "4px",
+                  }}
+                />
+                <div className="d-flex gap-3">
+                  <motion.div
+                    variants={skeletonVariants}
+                    animate="animate"
+                    style={{
+                      height: "40px",
+                      width: "100px",
+                      background: "#e0e0e0",
+                      borderRadius: "20px",
+                    }}
+                  />
+                  <motion.div
+                    variants={skeletonVariants}
+                    animate="animate"
+                    style={{
+                      height: "40px",
+                      width: "100px",
+                      background: "#e0e0e0",
+                      borderRadius: "20px",
+                    }}
+                  />
+                </div>
+              </Col>
+              <Col md={5}>
+                <motion.div
+                  variants={skeletonVariants}
+                  animate="animate"
+                  style={{
+                    height: "300px",
+                    width: "100%",
+                    background: "#e0e0e0",
+                    borderRadius: "20px",
+                  }}
+                />
+              </Col>
+            </Row>
+          </Container>
+        </div>
+      </section>
+
+      <section>
+        <Container>
+          <motion.div
+            variants={skeletonVariants}
+            animate="animate"
+            style={{
+              height: "30px",
+              width: "200px",
+              background: "#e0e0e0",
+              marginBottom: "20px",
+              borderRadius: "4px",
+            }}
+          />
+          <Row>
+            {[...Array(4)].map((_, index) => (
+              <SkeletonCategory key={index} />
+            ))}
+          </Row>
+        </Container>
+      </section>
+
+      <section>
+        <Container>
+          <div className="my-5">
+            <motion.div
+              variants={skeletonVariants}
+              animate="animate"
+              style={{
+                height: "30px",
+                width: "250px",
+                background: "#e0e0e0",
+                marginBottom: "20px",
+                borderRadius: "4px",
+              }}
+            />
+            <Row>
+              {[...Array(8)].map((_, index) => (
+                <SkeletonCard key={index} />
+              ))}
+            </Row>
+          </div>
+        </Container>
+      </section>
+    </>
+  );
+};
+
+// Home Component
+const Home = () => {
   const [APIData, setAPIData] = useState([]);
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [value, setValue] = useState("all");
@@ -54,7 +295,7 @@ export default function Home() {
     : filteredData.slice(0, 8);
 
   if (loading) {
-    return <Loader />;
+    return <SkeletonLoader />;
   }
 
   const CategoryCard = ({ icon, title, count, onClick }) => (
@@ -73,25 +314,25 @@ export default function Home() {
 
   const categories = [
     {
-      icon: <TbSkateboard size={24} />,
+      icon: <TbSkateboard size={54} />,
       title: "Skateboards",
       value: "sketeboard",
       count: getCategoryCount("sketeboard"),
     },
     {
-      icon: <PiTShirtDuotone size={24} />,
+      icon: <PiTShirtDuotone size={54} />,
       title: "Clothing",
       value: "clothing",
       count: getCategoryCount("clothing"),
     },
     {
-      icon: <GiConverseShoe size={24} />,
+      icon: <GiConverseShoe size={54} />,
       title: "Shoe",
       value: "shoe",
       count: getCategoryCount("shoe"),
     },
     {
-      icon: <GiHeadphones size={24} />,
+      icon: <GiHeadphones size={54} />,
       title: "Mobile",
       value: "mobile",
       count: getCategoryCount("mobile"),
@@ -169,7 +410,7 @@ export default function Home() {
             <ul className="d-lg-flex justify-content-between">
               <li>
                 <p>
-                  Find the world\'s best skateboarding gears from stores around
+                  Find the world's best skateboarding gears from stores around
                   the world
                 </p>
               </li>
@@ -201,7 +442,7 @@ export default function Home() {
             </h2>
             <ul className="d-lg-flex justify-content-between">
               <li>
-                <p>Explore all the world\'s products we offer</p>
+                <p>Explore all the world's products we offer</p>
               </li>
               <li>
                 <Link href="/usershopcollection" className="primary_color">
@@ -304,4 +545,6 @@ export default function Home() {
       </section>
     </>
   );
-}
+};
+
+export default Home;

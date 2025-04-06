@@ -128,25 +128,27 @@ const Login = ({
     <div
       className={`${
         isLoginPage
-          ? "min-vh-100 d-flex align-items-center justify-content-center bg-light"
+          ? "min-vh-100 d-flex align-items-center justify-content-center bg-light bg-gradient"
           : compact
           ? "p-3"
           : "card shadow-sm"
       }`}
     >
       <div
-        className={`${isLoginPage ? "card shadow-lg border-0" : "w-100"}`}
-        style={{ maxWidth: "400px" }}
+        className={`${isLoginPage ? "card shadow-lg border-0" : ""} ${
+          compact ? "" : "bg-white"
+        }`}
+        style={{ maxWidth: "400px", width: "100%" }}
       >
         {(!compact || isLoginPage) && (
-          <div className="card-header bg-white border-0 pt-4">
+          <div className="card-header bg-white border-0 pt-4 pb-3">
             <div className="text-center mb-3">
               <a
                 href="https://github.com/prakashwiser/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub profile"
-                className="d-inline-flex align-items-center justify-content-center rounded-circle bg-light p-2"
+                className="d-inline-block bg-light p-3 rounded-circle text-decoration-none"
               >
                 <ImGithub className="fs-4 text-dark" />
               </a>
@@ -169,8 +171,8 @@ const Login = ({
             {({ isSubmitting, errors, touched }) => (
               <Form>
                 <div className="mb-3">
-                  <label htmlFor="email" className="form-label">
-                    Email
+                  <label htmlFor="email" className="form-label fw-semibold">
+                    Email address
                   </label>
                   <Field
                     type="email"
@@ -179,7 +181,7 @@ const Login = ({
                     className={`form-control form-control-lg ${
                       touched.email && errors.email ? "is-invalid" : ""
                     }`}
-                    placeholder="Enter your email"
+                    placeholder="your@email.com"
                     autoComplete="username"
                   />
                   <ErrorMessage
@@ -190,9 +192,22 @@ const Login = ({
                 </div>
 
                 <div className="mb-4">
-                  <label htmlFor="password" className="form-label">
-                    Password
-                  </label>
+                  <div className="d-sm-flex  justify-content-between align-items-center mb-1">
+                    <label
+                      htmlFor="password"
+                      className="form-label fw-semibold"
+                    >
+                      Password
+                    </label>
+                    {(!compact || isLoginPage) && (
+                      <Link
+                        href="/user/forgot"
+                        className="text-decoration-none small text-muted"
+                      >
+                        Forgot password?
+                      </Link>
+                    )}
+                  </div>
                   <Field
                     type="password"
                     name="password"
@@ -200,7 +215,7 @@ const Login = ({
                     className={`form-control form-control-lg ${
                       touched.password && errors.password ? "is-invalid" : ""
                     }`}
-                    placeholder="Enter your password"
+                    placeholder="••••••••"
                     autoComplete="current-password"
                   />
                   <ErrorMessage
@@ -232,25 +247,18 @@ const Login = ({
                     )}
                   </button>
 
-                  {(!compact || isLoginPage) && (
-                    <>
-                      {!fromCollectionPage && (
-                        <Link
-                          href="/user/signupp"
-                          className="btn btn-outline-primary btn-lg"
-                        >
-                          Create Account
-                        </Link>
-                      )}
-                      <div className="text-center mt-2">
-                        <Link
-                          href="/user/forgot"
-                          className="text-decoration-none text-muted small"
-                        >
-                          Forgot password?
-                        </Link>
-                      </div>
-                    </>
+                  {(!compact || isLoginPage) && !fromCollectionPage && (
+                    <div className="text-center mt-3">
+                      <span className="text-muted">
+                        Don't have an account?{" "}
+                      </span>
+                      <Link
+                        href="/user/signupp"
+                        className="text-decoration-none fw-semibold text-success"
+                      >
+                        Sign up
+                      </Link>
+                    </div>
                   )}
                 </div>
               </Form>

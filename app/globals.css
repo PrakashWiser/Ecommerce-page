@@ -249,6 +249,10 @@ hr,
 .flash-hover-btn:hover {
   animation: colorFlash 0.4s forwards;
 }
+.searchbar-container {
+  max-width: 500px;
+  min-width: 500px;
+}
 @media (min-width: 1200px) {
   .home_sec_one h1 {
     width: 70%;
@@ -292,6 +296,10 @@ hr,
   .home_sec_three .img_details {
     width: 100%;
     height: auto;
+  }
+  .searchbar-container {
+    max-width: 300px !important;
+    min-width: 300px !important;
   }
 }
 @media (max-width: 576px) {

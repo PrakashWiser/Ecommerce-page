@@ -41,7 +41,7 @@ function Searchbar() {
 
   const handleOnSelect = (item) => {
     console.log("Selected Item:", item);
-    router.push(`/userproductsdetails/${item.id}`);
+    router.push(`/user/userproductsdetails/${item.id}`);
   };
 
   const handleOnFocus = () => {
@@ -49,16 +49,26 @@ function Searchbar() {
   };
 
   const formatResult = (item) => (
-    <div style={{ display: "block", textAlign: "left" }}>
-      {item.name}
-    </div>
+    <div style={{ display: "block", textAlign: "left" }}>{item.name}</div>
   );
 
+  const styling = {
+    zIndex: 9999,
+    position: "relative",
+    backgroundColor: "white",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+  };
+
   return (
-    <div className="text-center">
-      <div 
-        className="pb-3 pb-md-0"
-        style={{ width: "200px", minWidth: "300px" }}
+    <div className="text-center position-relative" style={{ zIndex: 9999 }}>
+      <div
+        className="pb-3 pb-md-0 searchbar-container"
+        style={{
+          position: "relative",
+          margin: "0 auto",
+        }}
       >
         <ReactSearchAutocomplete
           items={items}
@@ -69,6 +79,7 @@ function Searchbar() {
           autoFocus
           formatResult={formatResult}
           placeholder="Search Products"
+          styling={styling}
         />
       </div>
     </div>
